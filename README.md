@@ -1,32 +1,114 @@
-# StrumMacros in Kotlin
+# strum-macros-kotlin in Kotlin
 
 [![GitHub link](https://img.shields.io/badge/GitHub-KotlinMania%2Fstrum--macros--kotlin-blue.svg)](https://github.com/KotlinMania/strum-macros-kotlin)
 [![Maven Central](https://img.shields.io/maven-central/v/io.github.kotlinmania/strum-macros-kotlin)](https://central.sonatype.com/artifact/io.github.kotlinmania/strum-macros-kotlin)
 [![Build status](https://img.shields.io/github/actions/workflow/status/KotlinMania/strum-macros-kotlin/ci.yml?branch=main)](https://github.com/KotlinMania/strum-macros-kotlin/actions)
 
-Kotlin Multiplatform line-by-line clean-room port of the Rust crate [`strum_macros`](https://crates.io/crates/strum_macros).
+This is a Kotlin Multiplatform line-by-line transliteration port of [`Peternator7/strum`](https://github.com/Peternator7/strum).
 
-> **Status: scaffold — porting has not started.** This repo currently contains build infrastructure only. The upstream Rust source for the `strum_macros` crate will be cloned into `tmp/` (gitignored) when porting begins.
+**Original Project:** This port is based on [`Peternator7/strum`](https://github.com/Peternator7/strum). All design credit and project intent belong to the upstream authors; this repository is a faithful port to Kotlin Multiplatform with no behavioural changes intended.
 
-## About
+### Porting status
 
-`strum` derive macros
+This is an **in-progress port**. The goal is feature parity with the upstream Rust crate while providing a native Kotlin Multiplatform API. Every Kotlin file carries a `// port-lint: source <path>` header naming its upstream Rust counterpart so the AST-distance tool can track provenance.
 
-This port targets functional parity with the upstream Rust crate while presenting an idiomatic Kotlin Multiplatform API. Every Kotlin file is a faithful translation of an upstream Rust file and carries a `// port-lint: source <path>` header so the AST-distance tool can track provenance.
+---
 
-## Supported targets
+## Upstream README — `Peternator7/strum`
 
-- macOS arm64 / x64
-- Linux x64
-- Windows mingw-x64
-- iOS arm64 / x64 / simulator-arm64
-- JS (browser + Node.js)
-- Wasm-JS (browser + Node.js)
-- Android (API 24+)
+> The text below is reproduced and lightly edited from [`https://github.com/Peternator7/strum`](https://github.com/Peternator7/strum). It is the upstream project's own description and remains under the upstream authors' authorship; links have been rewritten to absolute upstream URLs so they continue to resolve from this repository.
 
-## Installation
+## Strum
 
-Once published:
+[![Rust](https://github.com/Peternator7/strum/actions/workflows/ci.yml/badge.svg)](https://github.com/Peternator7/strum/actions/workflows/ci.yml)
+[![Latest Version](https://img.shields.io/crates/v/strum.svg)](https://crates.io/crates/strum)
+[![Rust Documentation](https://docs.rs/strum/badge.svg)](https://docs.rs/strum)
+![Crates.io](https://img.shields.io/crates/l/strum)
+![Crates.io](https://img.shields.io/crates/d/strum)
+
+Strum is a set of macros and traits for working with enums and strings easier in Rust.
+
+# Compatibility
+
+Strum is currently compatible with versions of rustc >= 1.71.1. Pull Requests that improve compatibility with older
+versions are welcome. The project goal is to support a rust version for at least 2 years after release 
+and even longer is preferred since this project changes slowly.
+
+# Including Strum in Your Project
+
+Import strum and strum_macros into your project by adding the following lines to your
+Cargo.toml. Strum_macros contains the macros needed to derive all the traits in Strum.
+
+```toml
+[dependencies]
+strum = "0.28"
+strum_macros = "0.28"
+
+# You can also use the "derive" feature, and import the macros directly from "strum"
+# strum = { version = "0.28", features = ["derive"] }
+```
+
+# Strum Macros
+
+Strum has implemented the following macros:
+
+| Macro | Description |
+| --- | ----------- |
+| [EnumString] | Converts strings to enum variants based on their name. |
+| [Display] | Converts enum variants to strings |
+| [FromRepr] | Convert from an integer to an enum. |
+| [AsRefStr] | Implement `AsRef<str>` for `MyEnum` |
+| [IntoStaticStr] | Implements `From<MyEnum> for &'static str` on an enum |
+| [EnumIter] | Creates a new type that iterates of the variants of an enum. |
+| [EnumProperty] | Add custom properties to enum variants. |
+| [EnumMessage] | Add a verbose message to an enum variant. |
+| [EnumDiscriminants] | Generate a new type with only the discriminant names. |
+| [EnumCount] | Add a constant `usize` equal to the number of variants. |
+| [VariantArray] | Adds an associated `VARIANTS` constant which is an array of all enum discriminants |
+| [VariantNames] | Adds an associated `VARIANTS` constant which is an array of discriminant names |
+
+# Contributing
+
+Thanks for your interest in contributing. Bug fixes are always welcome. If you are interested in implementing or
+adding a macro, please open an issue first to discuss the feature. I have limited bandwidth to review new features.
+
+The project is divided into 3 parts, the traits are in the
+`/strum` folder. The procedural macros are in the `/strum_macros` folder, and the integration tests are
+in `/strum_tests`. If you are adding additional features to `strum` or `strum_macros`, you should make sure
+to run the tests and add new integration tests to make sure the features work as expected.
+
+# Debugging
+
+To see the generated code, set the STRUM_DEBUG environment variable before compiling your code.
+`STRUM_DEBUG=1` will dump all of the generated code for every type. `STRUM_DEBUG=YourType` will
+only dump the code generated on a type named `YourType`.
+
+# Name
+
+Strum is short for STRing enUM because it's a library for augmenting enums with additional
+information through strings.
+
+Strumming is also a very whimsical motion, much like writing Rust code.
+
+[EnumString]: https://docs.rs/strum_macros/latest/strum_macros/derive.EnumString.html
+[Display]: https://docs.rs/strum_macros/latest/strum_macros/derive.Display.html
+[AsRefStr]: https://docs.rs/strum_macros/latest/strum_macros/derive.AsRefStr.html
+[IntoStaticStr]: https://docs.rs/strum_macros/latest/strum_macros/derive.IntoStaticStr.html
+[EnumIter]: https://docs.rs/strum_macros/latest/strum_macros/derive.EnumIter.html
+[EnumIs]: https://docs.rs/strum_macros/latest/strum_macros/derive.EnumIs.html
+[EnumProperty]: https://docs.rs/strum_macros/latest/strum_macros/derive.EnumProperty.html
+[EnumMessage]: https://docs.rs/strum_macros/latest/strum_macros/derive.EnumMessage.html
+[EnumDiscriminants]: https://docs.rs/strum_macros/latest/strum_macros/derive.EnumDiscriminants.html
+[EnumCount]: https://docs.rs/strum_macros/latest/strum_macros/derive.EnumCount.html
+[FromRepr]: https://docs.rs/strum_macros/latest/strum_macros/derive.FromRepr.html
+[VariantArray]: https://docs.rs/strum_macros/latest/strum_macros/derive.VariantArray.html
+[VariantNames]: https://docs.rs/strum_macros/latest/strum_macros/derive.VariantNames.html
+
+---
+
+## About this Kotlin port
+
+### Installation
 
 ```kotlin
 dependencies {
@@ -34,19 +116,34 @@ dependencies {
 }
 ```
 
-## Build
+### Building
 
 ```bash
 ./gradlew build
 ./gradlew test
 ```
 
-## Porting guidelines
+### Targets
 
-See [CLAUDE.md](CLAUDE.md) and [AGENTS.md](AGENTS.md) for translator discipline, port-lint header convention, and Rust → Kotlin idiom mapping.
+- macOS arm64
+- Linux x64
+- Windows mingw-x64
+- iOS arm64 / simulator-arm64 (Swift export + XCFramework)
+- JS (browser + Node.js)
+- Wasm-JS (browser + Node.js)
+- Android (API 24+)
 
-## License
+### Porting guidelines
 
-Apache 2.0 — see [LICENSE](LICENSE).
+See [AGENTS.md](AGENTS.md) and [CLAUDE.md](CLAUDE.md) for translator discipline, port-lint header convention, and Rust → Kotlin idiom mapping.
 
-Original work copyrighted by the upstream `strum_macros` authors. Kotlin port copyright (c) 2026 Sydney Renee and The Solace Project.
+### License
+
+This Kotlin port is distributed under the same MIT license as the upstream [`Peternator7/strum`](https://github.com/Peternator7/strum). See [LICENSE](LICENSE) (and any sibling `LICENSE-*` / `NOTICE` files mirrored from upstream) for the full text.
+
+Original work copyrighted by the strum authors.  
+Kotlin port: Copyright (c) 2026 Sydney Renee and The Solace Project.
+
+### Acknowledgments
+
+Thanks to the [`Peternator7/strum`](https://github.com/Peternator7/strum) maintainers and contributors for the original Rust implementation. This port reproduces their work in Kotlin Multiplatform; bug reports about upstream design or behavior should go to the upstream repository.
