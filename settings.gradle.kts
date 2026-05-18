@@ -17,4 +17,3 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "strum-macros-kotlin"
-
