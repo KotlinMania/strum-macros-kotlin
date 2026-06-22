@@ -112,7 +112,7 @@ Strumming is also a very whimsical motion, much like writing Rust code.
 
 ```kotlin
 dependencies {
-    implementation("io.github.kotlinmania:strum-macros-kotlin:0.1.0")
+    implementation("io.github.kotlinmania:strum-macros-kotlin:0.2.0")
 }
 ```
 
