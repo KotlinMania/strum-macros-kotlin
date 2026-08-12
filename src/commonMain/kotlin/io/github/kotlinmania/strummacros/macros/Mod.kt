@@ -5,3 +5,6 @@ package io.github.kotlinmania.strummacros.macros
 // enum_messages, enum_properties, enum_table, enum_try_as,
 // enum_variant_array, enum_variant_names, from_repr, as_ref_str, display,
 // from_string, to_string
+
+/** Module ledger for strum-macros macros ported from upstream `macros/mod.rs`. */
+internal object Mod

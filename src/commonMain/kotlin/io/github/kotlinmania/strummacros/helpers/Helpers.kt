@@ -36,10 +36,11 @@ public fun strumDiscriminantsPassthroughError(span: Span): SynError =
     )
 
 public fun occurrenceError(fst: ToTokens, snd: ToTokens, attr: String): SynError {
-    val e = SynError.newSpanned(
-        snd,
-        "Found multiple occurrences of strum($attr)",
-    )
+    val e =
+        SynError.newSpanned(
+            snd,
+            "Found multiple occurrences of strum($attr)",
+        )
     e.combine(SynError.newSpanned(fst, "first one here"))
     return e
 }
