@@ -161,8 +161,7 @@ public fun Ident.convertCase(caseStyle: CaseStyle?): String =
     convertCase(this.toString(), caseStyle)
 
 /**
- * Heck doesn't treat numbers as new words, but this function does.
- * E.g. for input `Hello2You`, heck would output `hello2_you`, and snakify would output `hello_2_you`.
+ * Converts alphanumeric words to snake case, treating numbers as distinct words.
  */
 public fun snakify(s: String): String {
     val output = toSnakeCase(s).toMutableList()
