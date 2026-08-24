@@ -8,10 +8,10 @@ Based on AST analysis, here are the concrete next steps.
 - **Function parity:** 12/48 matched (target 25) — 25.0%
 - **Class/type parity:** 1/19 matched (target 4) — 5.3%
 - **Combined symbol parity:** 13/67 matched (target 29) — 19.4%
-- **Average inline-code cosine:** 0.00 (function body across 1 matched files)
-- **Average documentation cosine:** 1.00 (doc text across 1 matched files)
-- **Cheat-zeroed Files:** 3
-- **Critical Issues:** 3 files with <0.60 function similarity
+- **Average inline-code cosine:** 0.65 (function body across 1 matched files)
+- **Average documentation cosine:** 0.17 (doc text across 1 matched files)
+- **Cheat-zeroed Files:** 2
+- **Critical Issues:** 2 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
 
@@ -29,20 +29,15 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 1. helpers.case_style
 
-- **Target:** `helpers.CaseStyle [ZERO] [PROVENANCE-FALLBACK]`
-- **Similarity:** 0.00
+- **Target:** `helpers.CaseStyle`
+- **Similarity:** 0.65
 - **Dependents:** 2
-- **Priority Score:** 2020910.0
+- **Priority Score:** 2020903.5
 - **Functions:** 6/6 matched (target 18)
 - **Missing functions:** _none_
 - **Types:** 1/3 matched (target 2)
 - **Missing types:** `Err`, `CaseStyleHelpers`
 - **Tests:** 2/2 matched
-- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `helpers/case_style.rs` vs expected `helpers/case_style.rs`
-- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `tests:helpers/case_style.rs` vs expected `helpers/case_style.rs`
-- **Proposed provenance header:** `// port-lint: source helpers/case_style.rs` (current: `// port-lint: source helpers/case_style.rs`)
-- **Proposed provenance header:** `// port-lint: tests helpers/case_style.rs` (current: `// port-lint: tests helpers/case_style.rs`)
-- **Lint issues:** 2
 
 ### 2. helpers.mod
 
