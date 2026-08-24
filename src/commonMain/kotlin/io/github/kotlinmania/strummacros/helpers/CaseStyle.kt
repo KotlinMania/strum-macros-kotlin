@@ -1,4 +1,4 @@
-// port-lint: source helpers/case_style.rs
+// port-lint: source src/helpers/case_style.rs
 package io.github.kotlinmania.strummacros.helpers
 
 import io.github.kotlinmania.procmacro2.Ident
@@ -39,7 +39,6 @@ public enum class CaseStyle {
 
         public fun fromStr(text: String): CaseStyle? =
             when (text) {
-                // "camel_case" is a soft-deprecated case-style left for backward compatibility.
                 "PascalCase", "camel_case" -> PascalCase
                 "camelCase" -> CamelCase
                 "snake_case", "snek_case" -> SnakeCase
