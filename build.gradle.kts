@@ -38,7 +38,7 @@ group = providers.gradleProperty("project.group").getOrElse("io.github.kotlinman
 version = providers.gradleProperty("project.version").getOrElse("0.1.0-SNAPSHOT")
 val frameworkName = providers.gradleProperty("project.frameworkName").getOrElse("Unnamed")
 val projectNamespace = providers.gradleProperty("project.namespace").getOrElse("io.github.kotlinmania")
-val kotlinVersion = providers.gradleProperty("versions.kotlin").getOrElse("2.4.0")
+val kotlinVersion = providers.gradleProperty("versions.kotlin").getOrElse("2.4.10")
 val isCodeqlBuild = providers.gradleProperty("kotlinmania.codeql").map(String::toBoolean).getOrElse(false)
 val commonMainBundleName = providers.gradleProperty("project.dependencies.commonMainBundle").get()
 val commonMainDependencyBundle =
@@ -525,6 +525,7 @@ if (benchmarkEnabled) {
 // Test logging
 // ============================================================================
 tasks.withType<AbstractTestTask>().configureEach {
+    doNotTrackState("Avoid Gradle 9.7 MD5 binary results check on test tasks")
     testLogging {
         events(
             TestLogEvent.STARTED,
@@ -540,6 +541,10 @@ tasks.withType<AbstractTestTask>().configureEach {
         showStackTraces = true
         showStandardStreams = true
     }
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile>().configureEach {
+    doNotTrackState("Avoid Gradle 9.7 MD5 check on klib")
 }
 
 // ============================================================================
@@ -709,8 +714,7 @@ mavenPublishing {
 tasks.register("test") {
     group = "verification"
     description = "Runs the commonTest-backed KMP suite, Android host tests, and Swift Export smoke test."
-    dependsOn("allTests")
-    dependsOn("testAndroidHostTest")
+    dependsOn("hostTests")
     dependsOn("swiftExportSmokeTest")
 }
 
@@ -736,6 +740,26 @@ tasks.register("hostTests") {
     )
 }
 
+// Patch generated SPM Package.swift to include minimum macOS platform for Swift Concurrency
+tasks.matching { it.name.contains("GenerateSPMPackage") }.configureEach {
+    doLast {
+        val spmDir = layout.buildDirectory.dir("SPMPackage").orNull?.asFile
+        if (spmDir != null && spmDir.exists()) {
+            spmDir.walkTopDown().filter { it.name == "Package.swift" }.forEach { file ->
+                val text = file.readText()
+                if (!text.contains("platforms:")) {
+                    file.writeText(
+                        text.replaceFirst(
+                            Regex("""(let package = Package\s*\(\s*name:\s*"[^"]*",)"""),
+                            "$1\n    platforms: [.macOS(.v14)],",
+                        ),
+                    )
+                }
+            }
+        }
+    }
+}
+
 // Swift Export smoke test — produces the SPM package via embedSwiftExportForXcode
 // (spawned with the Xcode-style env it requires) and runs `swift test` against it,
 // so Swift Export breakage surfaces locally, not only in the swift.yml CI job.
@@ -748,12 +772,10 @@ tasks.register("swiftExportSmokeTest") {
 
     doLast {
         val execOperations = serviceOf<ExecOperations>()
-        val swiftBuildDir =
-            layout.buildDirectory
-                .dir("swift-test")
-                .get()
-                .asFile
-                .absolutePath
+        val swiftBuildDirFile = layout.buildDirectory.dir("swift-test").get().asFile
+        swiftBuildDirFile.deleteRecursively()
+        layout.buildDirectory.dir("SPMBuild").get().asFile.deleteRecursively()
+        val swiftBuildDir = swiftBuildDirFile.absolutePath
         execOperations
             .exec {
                 workingDir = projectDir
@@ -864,6 +886,28 @@ val fullTargetBuildTaskNames =
             add("${target}TestBinaries")
         }
     }
+
+
+tasks.matching { it.name == "compileTestDevelopmentExecutableKotlinWasmWasi" }.configureEach {
+    doLast {
+        val testMjs =
+            layout.buildDirectory
+                .file("compileSync/wasmWasi/test/testDevelopmentExecutable/kotlin/strum-macros-kotlin-test.mjs")
+                .get()
+                .asFile
+        if (testMjs.exists()) {
+            val content = testMjs.readText()
+            if (!content.contains("preopens")) {
+                testMjs.writeText(
+                    content.replace(
+                        "new WASI({ version: 'preview1', args: argv, env, });",
+                        "new WASI({ version: 'preview1', args: argv, env, preopens: { '.': '.' } });",
+                    ),
+                )
+            }
+        }
+    }
+}
 
 tasks.named("build") {
     dependsOn(fullTargetBuildTaskNames)
