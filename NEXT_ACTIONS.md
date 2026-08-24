@@ -46,7 +46,7 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 2. helpers.mod
 
-- **Target:** `helpers.Helpers [STUB] [PROVENANCE-FALLBACK]`
+- **Target:** `helpers.Helpers [STUB]`
 - **Similarity:** 0.00
 - **Dependents:** 0
 - **Priority Score:** 610.0
@@ -54,15 +54,10 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing functions:** _none_
 - **Types:** 0/0 matched (target 1)
 - **Missing types:** _none_
-- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `helpers/mod.rs` vs expected `helpers/mod.rs`
-- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `tests:helpers/mod.rs` vs expected `helpers/mod.rs`
-- **Proposed provenance header:** `// port-lint: source helpers/mod.rs` (current: `// port-lint: source helpers/mod.rs`)
-- **Proposed provenance header:** `// port-lint: tests helpers/mod.rs` (current: `// port-lint: tests helpers/mod.rs`)
-- **Lint issues:** 2
 
 ### 3. macros.mod
 
-- **Target:** `macros.Mod [STUB] [PROVENANCE-FALLBACK]`
+- **Target:** `macros.Mod [STUB]`
 - **Similarity:** 0.00
 - **Dependents:** 0
 - **Priority Score:** 10.0
@@ -70,9 +65,6 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing functions:** _none_
 - **Types:** 0/0 matched (target 1)
 - **Missing types:** _none_
-- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `macros/mod.rs` vs expected `macros/mod.rs`
-- **Proposed provenance header:** `// port-lint: source macros/mod.rs` (current: `// port-lint: source macros/mod.rs`)
-- **Lint issues:** 1
 
 ## Success Criteria
 
