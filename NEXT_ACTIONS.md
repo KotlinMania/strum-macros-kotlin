@@ -4,14 +4,14 @@ Based on AST analysis, here are the concrete next steps.
 
 ## Summary
 
-- **Files Present:** 3/24 (12.5%)
-- **Function parity:** 12/48 matched (target 25) — 25.0%
-- **Class/type parity:** 1/19 matched (target 4) — 5.3%
-- **Combined symbol parity:** 13/67 matched (target 29) — 19.4%
+- **Files Present:** 4/24 (16.7%)
+- **Function parity:** 12/67 matched (target 26) — 17.9%
+- **Class/type parity:** 1/19 matched (target 6) — 5.3%
+- **Combined symbol parity:** 13/86 matched (target 32) — 15.1%
 - **Average inline-code cosine:** 0.65 (function body across 1 matched files)
 - **Average documentation cosine:** 0.17 (doc text across 1 matched files)
-- **Cheat-zeroed Files:** 2
-- **Critical Issues:** 2 files with <0.60 function similarity
+- **Cheat-zeroed Files:** 3
+- **Critical Issues:** 3 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
 
@@ -29,7 +29,7 @@ Every matched file is listed below with function and type symbol parity.
 
 ### 1. helpers.case_style
 
-- **Target:** `helpers.CaseStyle`
+- **Target:** `helpers.CaseStyle [PROVENANCE-FALLBACK]`
 - **Similarity:** 0.65
 - **Dependents:** 2
 - **Priority Score:** 2020903.5
@@ -38,10 +38,31 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 1/3 matched (target 2)
 - **Missing types:** `Err`, `CaseStyleHelpers`
 - **Tests:** 2/2 matched
+- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `src/helpers/case_style.rs` vs expected `helpers/case_style.rs`
+- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `tests:src/helpers/case_style.rs` vs expected `helpers/case_style.rs`
+- **Proposed provenance header:** `// port-lint: source helpers/case_style.rs` (current: `// port-lint: source src/helpers/case_style.rs`)
+- **Proposed provenance header:** `// port-lint: tests helpers/case_style.rs` (current: `// port-lint: tests src/helpers/case_style.rs`)
+- **Lint issues:** 2
 
-### 2. helpers.mod
+### 2. lib
 
-- **Target:** `helpers.Helpers [STUB]`
+- **Target:** `strummacros.Lib [STUB] [PROVENANCE-FALLBACK]`
+- **Similarity:** 0.00
+- **Dependents:** 0
+- **Priority Score:** 191910.0
+- **Functions:** 0/19 matched (target 1)
+- **Missing functions:** `debug_print_generated`, `from_string`, `as_ref_str`, `variant_names`, `variant_names_deprecated`, `static_variants_array`, `as_static_str`, `into_static_str`, `to_string`, `display`, `enum_iter`, `enum_is`, `enum_try_as`, `enum_table`, `from_repr`, `enum_messages`, `enum_properties`, `enum_discriminants`, `enum_count`
+- **Types:** 0/0 matched (target 2)
+- **Missing types:** _none_
+- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `src/lib.rs` vs expected `lib.rs`
+- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `tests:src/lib.rs` vs expected `lib.rs`
+- **Proposed provenance header:** `// port-lint: source lib.rs` (current: `// port-lint: source src/lib.rs`)
+- **Proposed provenance header:** `// port-lint: tests lib.rs` (current: `// port-lint: tests src/lib.rs`)
+- **Lint issues:** 2
+
+### 3. helpers.mod
+
+- **Target:** `helpers.Helpers [STUB] [PROVENANCE-FALLBACK]`
 - **Similarity:** 0.00
 - **Dependents:** 0
 - **Priority Score:** 610.0
@@ -49,10 +70,15 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing functions:** _none_
 - **Types:** 0/0 matched (target 1)
 - **Missing types:** _none_
+- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `src/helpers/mod.rs` vs expected `helpers/mod.rs`
+- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `tests:src/helpers/mod.rs` vs expected `helpers/mod.rs`
+- **Proposed provenance header:** `// port-lint: source helpers/mod.rs` (current: `// port-lint: source src/helpers/mod.rs`)
+- **Proposed provenance header:** `// port-lint: tests helpers/mod.rs` (current: `// port-lint: tests src/helpers/mod.rs`)
+- **Lint issues:** 2
 
-### 3. macros.mod
+### 4. macros.mod
 
-- **Target:** `macros.Mod [STUB]`
+- **Target:** `macros.Mod [STUB] [PROVENANCE-FALLBACK]`
 - **Similarity:** 0.00
 - **Dependents:** 0
 - **Priority Score:** 10.0
@@ -60,6 +86,9 @@ Every matched file is listed below with function and type symbol parity.
 - **Missing functions:** _none_
 - **Types:** 0/0 matched (target 1)
 - **Missing types:** _none_
+- **Provenance warning:** port-lint provenance header matched only after fallback normalization: `src/macros/mod.rs` vs expected `macros/mod.rs`
+- **Proposed provenance header:** `// port-lint: source macros/mod.rs` (current: `// port-lint: source src/macros/mod.rs`)
+- **Lint issues:** 1
 
 ## Success Criteria
 
@@ -81,6 +110,5 @@ do not treat them as the next implementation target by default.
 
 | Source | Expected target | Deps | Source path | Expected path |
 |--------|-----------------|------|-------------|---------------|
-| `lib` | `Lib` | 0 | `src/lib.rs` | `Lib.kt` |
-| `strings.mod` | `macros.strings.Mod` | 0 | `src/macros/strings/mod.rs` | `macros/strings/Mod.kt` |
+| `strings.mod` | `macros.strings.Mod` | 0 | `macros/strings/mod.rs` | `macros/strings/Mod.kt` |
 
