@@ -7,7 +7,8 @@ struct StrumMacrosExportTests {
     @Test("StrumMacros swift module imported cleanly")
     func swiftModuleLoads() throws {
         #expect(Bool(true))
-        let style = helpers.CaseStyle.PascalCase
-        #expect(style == .PascalCase)
+        let v = StrumMacros.shared.VERSION
+        #expect(v == "0.26.4")
     }
 }
+

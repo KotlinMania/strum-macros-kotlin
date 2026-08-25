@@ -1,4 +1,4 @@
-// port-lint: source src/macros/mod.rs
+// port-lint: source macros/mod.rs
 package io.github.kotlinmania.strummacros.macros
 
 // Callers migrated: EnumCount, EnumDiscriminants, EnumIs, EnumIter,
