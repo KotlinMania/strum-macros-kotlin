@@ -1,4 +1,4 @@
-// port-lint: source src/helpers/case_style.rs
+// port-lint: source helpers/case_style.rs
 package io.github.kotlinmania.strummacros.helpers
 
 import io.github.kotlinmania.procmacro2.Ident
@@ -8,7 +8,7 @@ import io.github.kotlinmania.syn.ParseStream
 import io.github.kotlinmania.syn.SynError
 import io.github.kotlinmania.syn.SynResult
 
-public enum class CaseStyle {
+internal enum class CaseStyle {
     CamelCase,
     KebabCase,
     MixedCase,
@@ -21,8 +21,8 @@ public enum class CaseStyle {
     PascalCase,
     TrainCase;
 
-    public companion object {
-        public val VALID_CASE_STYLES: List<String> =
+    companion object {
+        val VALID_CASE_STYLES: List<String> =
             listOf(
                 "camelCase",
                 "PascalCase",
@@ -37,7 +37,7 @@ public enum class CaseStyle {
                 "Train-Case",
             )
 
-        public fun fromStr(text: String): CaseStyle? =
+        fun fromStr(text: String): CaseStyle? =
             when (text) {
                 "PascalCase", "camel_case" -> PascalCase
                 "camelCase" -> CamelCase
@@ -53,9 +53,9 @@ public enum class CaseStyle {
                 else -> null
             }
 
-        public fun fromString(text: String): CaseStyle? = fromStr(text)
+        fun fromString(text: String): CaseStyle? = fromStr(text)
 
-        public fun parse(input: ParseStream): SynResult<CaseStyle> {
+        fun parse(input: ParseStream): SynResult<CaseStyle> {
             val text = when (val res = LitStrParse.parse(input)) {
                 is SynResult.Success -> res.value
                 is SynResult.Failure -> return SynResult.failure(res.error)
@@ -135,7 +135,11 @@ private fun toTitleCase(s: String): String =
 private fun toTrainCase(s: String): String =
     splitWords(s).joinToString("-") { capitalize(it) }
 
-public fun convertCase(
+internal interface CaseStyleHelpers {
+    fun convertCase(caseStyle: CaseStyle?): String
+}
+
+internal fun convertCase(
     identString: String,
     caseStyle: CaseStyle?,
 ): String =
@@ -157,13 +161,13 @@ public fun convertCase(
         }
     }
 
-public fun Ident.convertCase(caseStyle: CaseStyle?): String =
+internal fun Ident.convertCase(caseStyle: CaseStyle?): String =
     convertCase(this.toString(), caseStyle)
 
 /**
  * Converts alphanumeric words to snake case, treating numbers as distinct words.
  */
-public fun snakify(s: String): String {
+internal fun snakify(s: String): String {
     val output = toSnakeCase(s).toMutableList()
     val numStarts = mutableListOf<Int>()
     for (pos in output.indices) {

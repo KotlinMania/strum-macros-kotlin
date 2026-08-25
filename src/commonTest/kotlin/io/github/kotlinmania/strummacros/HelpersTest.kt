@@ -1,4 +1,4 @@
-// port-lint: tests src/helpers/mod.rs
+// port-lint: tests helpers/mod.rs
 package io.github.kotlinmania.strummacros
 
 import io.github.kotlinmania.procmacro2.Span
