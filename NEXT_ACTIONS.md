@@ -5,13 +5,13 @@ Based on AST analysis, here are the concrete next steps.
 ## Summary
 
 - **Files Present:** 24/24 (100.0%)
-- **Function parity:** 62/63 matched (target 82) — 98.4%
-- **Class/type parity:** 19/20 matched (target 48) — 95.0%
-- **Combined symbol parity:** 81/83 matched (target 130) — 97.6%
-- **Average inline-code cosine:** 0.62 (function body across 21 matched files)
-- **Average documentation cosine:** 0.02 (doc text across 21 matched files)
-- **Cheat-zeroed Files:** 4
-- **Critical Issues:** 7 files with <0.60 function similarity
+- **Function parity:** 62/63 matched (target 97) — 98.4%
+- **Class/type parity:** 19/20 matched (target 49) — 95.0%
+- **Combined symbol parity:** 81/83 matched (target 146) — 97.6%
+- **Average inline-code cosine:** 0.62 (function body across 20 matched files)
+- **Average documentation cosine:** 0.01 (doc text across 20 matched files)
+- **Cheat-zeroed Files:** 5
+- **Critical Issues:** 8 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
 
@@ -83,12 +83,12 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched
 - **Missing types:** _none_
 
-### 6. lib
+### 6. strum_macros.lib
 
-- **Target:** `strummacros.Lib`
-- **Similarity:** 0.61
+- **Target:** `strummacros.Lib [STUB]`
+- **Similarity:** 0.00
 - **Dependents:** 0
-- **Priority Score:** 11903.9
+- **Priority Score:** 11910.0
 - **Functions:** 18/19 matched
 - **Missing functions:** `debug_print_generated`
 - **Types:** 0/0 matched (target 2)
@@ -287,9 +287,9 @@ Every matched file is listed below with function and type symbol parity.
 - **Similarity:** 0.00
 - **Dependents:** 0
 - **Priority Score:** 10.0
-- **Functions:** 0/0 matched
+- **Functions:** 0/0 matched (target 15)
 - **Missing functions:** _none_
-- **Types:** 0/0 matched (target 1)
+- **Types:** 0/0 matched (target 2)
 - **Missing types:** _none_
 
 ## Success Criteria

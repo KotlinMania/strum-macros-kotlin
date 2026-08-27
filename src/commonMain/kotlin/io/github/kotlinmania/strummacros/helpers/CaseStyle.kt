@@ -1,4 +1,4 @@
-// port-lint: source helpers/case_style.rs
+// port-lint: source strum_macros/src/helpers/case_style.rs
 package io.github.kotlinmania.strummacros.helpers
 
 import io.github.kotlinmania.procmacro2.Ident

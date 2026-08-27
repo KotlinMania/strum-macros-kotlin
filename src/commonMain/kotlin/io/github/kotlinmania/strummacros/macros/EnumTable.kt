@@ -1,4 +1,4 @@
-// port-lint: source macros/enum_table.rs
+// port-lint: source strum_macros/src/macros/enum_table.rs
 package io.github.kotlinmania.strummacros.macros
 
 import io.github.kotlinmania.procmacro2.Span
