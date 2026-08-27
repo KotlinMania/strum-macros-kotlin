@@ -18,19 +18,21 @@ private enum class PropertyType {
     Bool,
 }
 
-private val PROPERTY_TYPES: List<PropertyType> = listOf(
-    PropertyType.String,
-    PropertyType.Integer,
-    PropertyType.Bool,
-)
+private val PROPERTY_TYPES: List<PropertyType> =
+    listOf(
+        PropertyType.String,
+        PropertyType.Integer,
+        PropertyType.Bool,
+    )
 
 internal fun enumPropertiesInner(ast: DeriveInput): SynResult<TokenStream> {
     val name = ast.ident
     val (implGenerics, tyGenerics, whereClause) = ast.generics.splitForImpl()
-    val variants = when (val data = ast.data) {
-        is Data.Enum -> data.variants.toList()
-        else -> return SynResult.failure(nonEnumError())
-    }
+    val variants =
+        when (val data = ast.data) {
+            is Data.Enum -> data.variants.toList()
+            else -> return SynResult.failure(nonEnumError())
+        }
     val typeProperties = ast.getTypeProperties().getOrElse { return SynResult.failure(it) }
     val strumModulePath = typeProperties.crateModulePath()
 
@@ -45,19 +47,21 @@ internal fun enumPropertiesInner(ast: DeriveInput): SynResult<TokenStream> {
             continue
         }
 
-        val params = when (variant.fields) {
-            is Fields.Unit -> quote("")
-            is Fields.Unnamed -> quote("(..)")
-            is Fields.Named -> quote("{..}")
-        }
+        val params =
+            when (variant.fields) {
+                is Fields.Unit -> quote("")
+                is Fields.Unnamed -> quote("(..)")
+                is Fields.Named -> quote("{..}")
+            }
 
         for ((key, value) in variantProperties.props) {
-            val propertyType = when (value) {
-                is Lit.Str -> PropertyType.String
-                is Lit.Bool -> PropertyType.Bool
-                is Lit.Int -> PropertyType.Integer
-                else -> error("unsupported property literal type")
-            }
+            val propertyType =
+                when (value) {
+                    is Lit.Str -> PropertyType.String
+                    is Lit.Bool -> PropertyType.Bool
+                    is Lit.Int -> PropertyType.Integer
+                    else -> error("unsupported property literal type")
+                }
 
             arms[propertyType]!!.add(quote("#key => ::core::option::Option::Some( #value )", "key" to key, "value" to value))
         }
@@ -93,42 +97,43 @@ internal fun enumPropertiesInner(ast: DeriveInput): SynResult<TokenStream> {
     val builtIntArms = builtArms[PropertyType.Integer]!!
     val builtBoolArms = builtArms[PropertyType.Bool]!!
 
-    val output = quote(
-        """
-        #[automatically_derived]
-        impl #impl_generics #strum_module_path::EnumProperty for #name #ty_generics #where_clause {
-            #[inline]
-            fn get_str(&self, prop: &str) -> ::core::option::Option<&'static str> {
-                match self {
-                    #(#built_string_arms),*
+    val output =
+        quote(
+            """
+            #[automatically_derived]
+            impl #impl_generics #strum_module_path::EnumProperty for #name #ty_generics #where_clause {
+                #[inline]
+                fn get_str(&self, prop: &str) -> ::core::option::Option<&'static str> {
+                    match self {
+                        #(#built_string_arms),*
+                    }
                 }
-            }
 
-            #[inline]
-            fn get_int(&self, prop: &str) -> ::core::option::Option<i64> {
-                match self {
-                    #(#built_int_arms),*
+                #[inline]
+                fn get_int(&self, prop: &str) -> ::core::option::Option<i64> {
+                    match self {
+                        #(#built_int_arms),*
+                    }
                 }
-            }
 
-            #[inline]
-            fn get_bool(&self, prop: &str) -> ::core::option::Option<bool> {
-                match self {
-                    #(#built_bool_arms),*
+                #[inline]
+                fn get_bool(&self, prop: &str) -> ::core::option::Option<bool> {
+                    match self {
+                        #(#built_bool_arms),*
+                    }
                 }
-            }
 
-        }
-        """.trimIndent(),
-        "impl_generics" to implGenerics,
-        "strum_module_path" to strumModulePath,
-        "name" to name,
-        "ty_generics" to tyGenerics,
-        "where_clause" to whereClause,
-        "built_string_arms" to builtStringArms,
-        "built_int_arms" to builtIntArms,
-        "built_bool_arms" to builtBoolArms,
-    )
+            }
+            """.trimIndent(),
+            "impl_generics" to implGenerics,
+            "strum_module_path" to strumModulePath,
+            "name" to name,
+            "ty_generics" to tyGenerics,
+            "where_clause" to whereClause,
+            "built_string_arms" to builtStringArms,
+            "built_int_arms" to builtIntArms,
+            "built_bool_arms" to builtBoolArms,
+        )
 
     return SynResult.success(output)
 }

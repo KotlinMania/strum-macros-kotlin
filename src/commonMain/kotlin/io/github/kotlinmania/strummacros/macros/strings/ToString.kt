@@ -15,10 +15,11 @@ import io.github.kotlinmania.syn.SynResult
 internal fun toStringInner(ast: DeriveInput): SynResult<TokenStream> {
     val name = ast.ident
     val (implGenerics, tyGenerics, whereClause) = ast.generics.splitForImpl()
-    val variants = when (val data = ast.data) {
-        is Data.Enum -> data.variants.toList()
-        else -> return SynResult.failure(nonEnumError())
-    }
+    val variants =
+        when (val data = ast.data) {
+            is Data.Enum -> data.variants.toList()
+            else -> return SynResult.failure(nonEnumError())
+        }
 
     val typeProperties = ast.getTypeProperties().getOrElse { return SynResult.failure(it) }
     val arms = mutableListOf<TokenStream>()
@@ -56,17 +57,19 @@ internal fun toStringInner(ast: DeriveInput): SynResult<TokenStream> {
             }
         }
 
-        val output = variantProperties.getPreferredName(
-            typeProperties.caseStyle,
-            typeProperties.prefix,
-            typeProperties.suffix,
-        )
+        val output =
+            variantProperties.getPreferredName(
+                typeProperties.caseStyle,
+                typeProperties.prefix,
+                typeProperties.suffix,
+            )
 
-        val params = when (variant.fields) {
-            is Fields.Unit, Fields.Unit -> quote("")
-            is Fields.Unnamed -> quote("(..)")
-            is Fields.Named -> quote("{..}")
-        }
+        val params =
+            when (variant.fields) {
+                is Fields.Unit, Fields.Unit -> quote("")
+                is Fields.Unnamed -> quote("(..)")
+                is Fields.Named -> quote("{..}")
+            }
 
         arms.add(quote("#name::#ident #params => ::std::string::String::from(#output)", "name" to name, "ident" to ident, "params" to params, "output" to output))
     }
@@ -75,23 +78,24 @@ internal fun toStringInner(ast: DeriveInput): SynResult<TokenStream> {
         arms.add(quote("_ => panic!(\"to_string() called on disabled variant.\")"))
     }
 
-    val output = quote(
-        """
-        #[allow(clippy::use_self)]
-        #[automatically_derived]
-        impl #impl_generics ::std::string::ToString for #name #ty_generics #where_clause {
-            fn to_string(&self) -> ::std::string::String {
-                match *self {
-                    #(#arms),*
+    val output =
+        quote(
+            """
+            #[allow(clippy::use_self)]
+            #[automatically_derived]
+            impl #impl_generics ::std::string::ToString for #name #ty_generics #where_clause {
+                fn to_string(&self) -> ::std::string::String {
+                    match *self {
+                        #(#arms),*
+                    }
                 }
             }
-        }
-        """.trimIndent(),
-        "impl_generics" to implGenerics,
-        "name" to name,
-        "ty_generics" to tyGenerics,
-        "where_clause" to whereClause,
-        "arms" to arms,
-    )
+            """.trimIndent(),
+            "impl_generics" to implGenerics,
+            "name" to name,
+            "ty_generics" to tyGenerics,
+            "where_clause" to whereClause,
+            "arms" to arms,
+        )
     return SynResult.success(output)
 }

@@ -2,7 +2,6 @@
 package io.github.kotlinmania.strummacros.helpers
 
 import io.github.kotlinmania.procmacro2.Ident
-import io.github.kotlinmania.syn.LitStr
 import io.github.kotlinmania.syn.LitStrParse
 import io.github.kotlinmania.syn.ParseStream
 import io.github.kotlinmania.syn.SynError
@@ -19,7 +18,8 @@ internal enum class CaseStyle {
     LowerCase,
     ScreamingKebabCase,
     PascalCase,
-    TrainCase;
+    TrainCase,
+    ;
 
     companion object {
         val VALID_CASE_STYLES: List<String> =
@@ -56,10 +56,11 @@ internal enum class CaseStyle {
         fun fromString(text: String): CaseStyle? = fromStr(text)
 
         fun parse(input: ParseStream): SynResult<CaseStyle> {
-            val text = when (val res = LitStrParse.parse(input)) {
-                is SynResult.Success -> res.value
-                is SynResult.Failure -> return SynResult.failure(res.error)
-            }
+            val text =
+                when (val res = LitStrParse.parse(input)) {
+                    is SynResult.Success -> res.value
+                    is SynResult.Failure -> return SynResult.failure(res.error)
+                }
             val value = text.value()
             val style = fromString(value)
             return if (style != null) {
