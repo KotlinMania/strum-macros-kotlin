@@ -1,4 +1,4 @@
-// port-lint: source strum_macros/src/lib.rs
+// port-lint: source lib.rs
 package io.github.kotlinmania.strummacros
 
 import io.github.kotlinmania.procmacro2.TokenStream
