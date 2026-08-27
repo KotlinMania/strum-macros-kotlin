@@ -17,10 +17,11 @@ internal fun staticVariantsArrayInner(ast: DeriveInput): SynResult<TokenStream> 
     val gen = ast.generics
     val (implGenerics, tyGenerics, whereClause) = gen.splitForImpl()
 
-    val variants = when (val data = ast.data) {
-        is Data.Enum -> data.variants.toList()
-        else -> return SynResult.failure(nonEnumError())
-    }
+    val variants =
+        when (val data = ast.data) {
+            is Data.Enum -> data.variants.toList()
+            else -> return SynResult.failure(nonEnumError())
+        }
 
     val typeProperties = ast.getTypeProperties().getOrElse { return SynResult.failure(it) }
     val strumModulePath = typeProperties.crateModulePath()
@@ -33,19 +34,20 @@ internal fun staticVariantsArrayInner(ast: DeriveInput): SynResult<TokenStream> 
         }
     }
 
-    val output = quote(
-        """
-        #[automatically_derived]
-        impl #impl_generics #strum_module_path::VariantArray for #name #ty_generics #where_clause {
-            const VARIANTS: &'static [Self] = &[ #(#name::#idents),* ];
-        }
-        """.trimIndent(),
-        "impl_generics" to implGenerics,
-        "strum_module_path" to strumModulePath,
-        "name" to name,
-        "ty_generics" to tyGenerics,
-        "where_clause" to whereClause,
-        "idents" to idents,
-    )
+    val output =
+        quote(
+            """
+            #[automatically_derived]
+            impl #impl_generics #strum_module_path::VariantArray for #name #ty_generics #where_clause {
+                const VARIANTS: &'static [Self] = &[ #(#name::#idents),* ];
+            }
+            """.trimIndent(),
+            "impl_generics" to implGenerics,
+            "strum_module_path" to strumModulePath,
+            "name" to name,
+            "ty_generics" to tyGenerics,
+            "where_clause" to whereClause,
+            "idents" to idents,
+        )
     return SynResult.success(output)
 }

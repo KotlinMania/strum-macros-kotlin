@@ -18,10 +18,11 @@ internal fun Field.getVariantInnerProperties(): SynResult<StrumInnerVariantPrope
     val output = StrumInnerVariantProperties()
     var defaultWithKw: Ident? = null
 
-    val namedMeta = when (val res = this.getNamedMetadata()) {
-        is SynResult.Success -> res.value
-        is SynResult.Failure -> return SynResult.failure(res.error)
-    }
+    val namedMeta =
+        when (val res = this.getNamedMetadata()) {
+            is SynResult.Success -> res.value
+            is SynResult.Failure -> return SynResult.failure(res.error)
+        }
 
     for (meta in namedMeta) {
         when (meta) {

@@ -48,10 +48,11 @@ internal fun fromReprInner(ast: DeriveInput): SynResult<TokenStream> {
         )
     }
 
-    val variants = when (val data = ast.data) {
-        is Data.Enum -> data.variants.toList()
-        else -> return SynResult.failure(nonEnumError())
-    }
+    val variants =
+        when (val data = ast.data) {
+            is Data.Enum -> data.variants.toList()
+            else -> return SynResult.failure(nonEnumError())
+        }
 
     val arms = mutableListOf<TokenStream>()
     val constantDefs = mutableListOf<TokenStream>()
@@ -65,33 +66,38 @@ internal fun fromReprInner(ast: DeriveInput): SynResult<TokenStream> {
         }
 
         val ident = variant.ident
-        val params = when (val fields = variant.fields) {
-            is Fields.Unit -> quote("")
-            is Fields.Unnamed -> {
-                hasAdditionalData = true
-                val defaults = List(fields.fields.unnamed.len()) { quote("::core::default::Default::default()") }
-                quote("(#(#defaults),*)", "defaults" to defaults)
+        val params =
+            when (val fields = variant.fields) {
+                is Fields.Unit -> quote("")
+                is Fields.Unnamed -> {
+                    hasAdditionalData = true
+                    val defaults = List(fields.fields.unnamed.len()) { quote("::core::default::Default::default()") }
+                    quote("(#(#defaults),*)", "defaults" to defaults)
+                }
+                is Fields.Named -> {
+                    hasAdditionalData = true
+                    val fieldIdents =
+                        fields.fields.named
+                            .toList()
+                            .mapNotNull { it.ident }
+                    val fieldAssignments = fieldIdents.map { f -> quote("#f: ::core::default::Default::default()", "f" to f) }
+                    quote("{#(#field_assignments),*}", "field_assignments" to fieldAssignments)
+                }
             }
-            is Fields.Named -> {
-                hasAdditionalData = true
-                val fieldIdents = fields.fields.named.toList().mapNotNull { it.ident }
-                val fieldAssignments = fieldIdents.map { f -> quote("#f: ::core::default::Default::default()", "f" to f) }
-                quote("{#(#field_assignments),*}", "field_assignments" to fieldAssignments)
-            }
-        }
 
         val constVarStr = "${variant.ident}_DISCRIMINANT"
         val constVarIdent = formatIdent("{}", constVarStr)
 
-        val constValExpr = if (variant.discriminant != null) {
-            val expr = variant.discriminant!!.expr
-            quote("#expr", "expr" to expr)
-        } else if (prevConstVarIdent != null) {
-            val prev = prevConstVarIdent
-            quote("#prev + 1", "prev" to prev)
-        } else {
-            quote("0")
-        }
+        val constValExpr =
+            if (variant.discriminant != null) {
+                val expr = variant.discriminant!!.expr
+                quote("#expr", "expr" to expr)
+            } else if (prevConstVarIdent != null) {
+                val prev = prevConstVarIdent
+                quote("#prev + 1", "prev" to prev)
+            } else {
+                quote("0")
+            }
 
         constantDefs.add(
             quote(
@@ -119,37 +125,39 @@ internal fun fromReprInner(ast: DeriveInput): SynResult<TokenStream> {
 
     arms.add(quote("_ => ::core::option::Option::None"))
 
-    val constIfPossible = if (hasAdditionalData) {
-        quote("")
-    } else {
-        quote("const")
-    }
+    val constIfPossible =
+        if (hasAdditionalData) {
+            quote("")
+        } else {
+            quote("const")
+        }
 
-    val output = quote(
-        """
-        #[allow(clippy::use_self)]
-        #[automatically_derived]
-        impl #impl_generics #name #ty_generics #where_clause {
-            #[doc = "Try to create [Self] from the raw representation"]
-            #[inline]
-            #vis #const_if_possible fn from_repr(discriminant: #discriminant_type) -> Option<#name #ty_generics> {
-                #(#constant_defs)*
-                match discriminant {
-                    #(#arms),*
+    val output =
+        quote(
+            """
+            #[allow(clippy::use_self)]
+            #[automatically_derived]
+            impl #impl_generics #name #ty_generics #where_clause {
+                #[doc = "Try to create [Self] from the raw representation"]
+                #[inline]
+                #vis #const_if_possible fn from_repr(discriminant: #discriminant_type) -> Option<#name #ty_generics> {
+                    #(#constant_defs)*
+                    match discriminant {
+                        #(#arms),*
+                    }
                 }
             }
-        }
-        """.trimIndent(),
-        "impl_generics" to implGenerics,
-        "name" to name,
-        "ty_generics" to tyGenerics,
-        "where_clause" to whereClause,
-        "vis" to vis,
-        "const_if_possible" to constIfPossible,
-        "discriminant_type" to discriminantType,
-        "constant_defs" to constantDefs,
-        "arms" to arms,
-    )
+            """.trimIndent(),
+            "impl_generics" to implGenerics,
+            "name" to name,
+            "ty_generics" to tyGenerics,
+            "where_clause" to whereClause,
+            "vis" to vis,
+            "const_if_possible" to constIfPossible,
+            "discriminant_type" to discriminantType,
+            "constant_defs" to constantDefs,
+            "arms" to arms,
+        )
 
     return SynResult.success(output)
 }

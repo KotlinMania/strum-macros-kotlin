@@ -2,11 +2,16 @@
 package io.github.kotlinmania.strummacros.helpers
 
 import io.github.kotlinmania.procmacro2.Ident
-import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.syn.Attribute
+import io.github.kotlinmania.syn.CommaParse
+import io.github.kotlinmania.syn.CommaPeek
+import io.github.kotlinmania.syn.CrateParse
+import io.github.kotlinmania.syn.CratePeek
 import io.github.kotlinmania.syn.CustomKeywordParse
 import io.github.kotlinmania.syn.CustomKeywordPeek
 import io.github.kotlinmania.syn.DeriveInput
+import io.github.kotlinmania.syn.EqParse
+import io.github.kotlinmania.syn.EqPeek
 import io.github.kotlinmania.syn.Expr
 import io.github.kotlinmania.syn.Field
 import io.github.kotlinmania.syn.IdentParse
@@ -27,12 +32,6 @@ import io.github.kotlinmania.syn.VisibilityParse
 import io.github.kotlinmania.syn.identParseAny
 import io.github.kotlinmania.syn.parenthesized
 import io.github.kotlinmania.syn.parseStr
-import io.github.kotlinmania.syn.CommaParse
-import io.github.kotlinmania.syn.CommaPeek
-import io.github.kotlinmania.syn.CrateParse
-import io.github.kotlinmania.syn.CratePeek
-import io.github.kotlinmania.syn.EqParse
-import io.github.kotlinmania.syn.EqPeek
 
 internal object Kw {
     val serializeAllPeek = CustomKeywordPeek("serialize_all")
@@ -82,15 +81,47 @@ internal object Kw {
 }
 
 internal sealed class EnumMeta {
-    data class SerializeAll(val kw: Ident, val caseStyle: CaseStyle) : EnumMeta()
-    data class AsciiCaseInsensitive(val kw: Ident) : EnumMeta()
-    data class Crate(val kw: Ident, val crateModulePath: Path) : EnumMeta()
-    data class UsePhf(val kw: Ident) : EnumMeta()
-    data class Prefix(val kw: Ident, val prefix: LitStr) : EnumMeta()
-    data class Suffix(val kw: Ident, val suffix: LitStr) : EnumMeta()
-    data class ParseErrTy(val kw: Ident, val path: Path) : EnumMeta()
-    data class ParseErrFn(val kw: Ident, val path: Path) : EnumMeta()
-    data class ConstIntoStr(val kw: Ident) : EnumMeta()
+    data class SerializeAll(
+        val kw: Ident,
+        val caseStyle: CaseStyle,
+    ) : EnumMeta()
+
+    data class AsciiCaseInsensitive(
+        val kw: Ident,
+    ) : EnumMeta()
+
+    data class Crate(
+        val kw: Ident,
+        val crateModulePath: Path,
+    ) : EnumMeta()
+
+    data class UsePhf(
+        val kw: Ident,
+    ) : EnumMeta()
+
+    data class Prefix(
+        val kw: Ident,
+        val prefix: LitStr,
+    ) : EnumMeta()
+
+    data class Suffix(
+        val kw: Ident,
+        val suffix: LitStr,
+    ) : EnumMeta()
+
+    data class ParseErrTy(
+        val kw: Ident,
+        val path: Path,
+    ) : EnumMeta()
+
+    data class ParseErrFn(
+        val kw: Ident,
+        val path: Path,
+    ) : EnumMeta()
+
+    data class ConstIntoStr(
+        val kw: Ident,
+    ) : EnumMeta()
 
     companion object {
         fun parse(input: ParseStream): SynResult<EnumMeta> {
@@ -151,10 +182,24 @@ internal sealed class EnumMeta {
 }
 
 internal sealed class EnumDiscriminantsMeta {
-    data class Derive(val kw: Ident, val paths: List<Path>) : EnumDiscriminantsMeta()
-    data class Name(val kw: Ident, val name: Ident) : EnumDiscriminantsMeta()
-    data class Vis(val kw: Ident, val vis: Visibility) : EnumDiscriminantsMeta()
-    data class Other(val passthroughMeta: Meta) : EnumDiscriminantsMeta()
+    data class Derive(
+        val kw: Ident,
+        val paths: List<Path>,
+    ) : EnumDiscriminantsMeta()
+
+    data class Name(
+        val kw: Ident,
+        val name: Ident,
+    ) : EnumDiscriminantsMeta()
+
+    data class Vis(
+        val kw: Ident,
+        val vis: Visibility,
+    ) : EnumDiscriminantsMeta()
+
+    data class Other(
+        val passthroughMeta: Meta,
+    ) : EnumDiscriminantsMeta()
 
     companion object {
         fun parse(input: ParseStream): SynResult<EnumDiscriminantsMeta> {
@@ -200,6 +245,7 @@ internal sealed class EnumDiscriminantsMeta {
 
 internal interface DeriveInputExt {
     fun getMetadata(): SynResult<List<EnumMeta>>
+
     fun getDiscriminantsMetadata(): SynResult<List<EnumDiscriminantsMeta>>
 }
 
@@ -210,17 +256,56 @@ internal fun DeriveInput.getDiscriminantsMetadata(): SynResult<List<EnumDiscrimi
     getMetadataInner("strum_discriminants", this.attrs, EnumDiscriminantsMeta::parse)
 
 internal sealed class VariantMeta {
-    data class Message(val kw: Ident, val value: LitStr) : VariantMeta()
-    data class DetailedMessage(val kw: Ident, val value: LitStr) : VariantMeta()
-    data class Serialize(val kw: Ident, val value: LitStr) : VariantMeta()
-    data class Documentation(val value: LitStr) : VariantMeta()
-    data class ToStringMeta(val kw: Ident, val value: LitStr) : VariantMeta()
-    data class Transparent(val kw: Ident) : VariantMeta()
-    data class Disabled(val kw: Ident) : VariantMeta()
-    data class Default(val kw: Ident) : VariantMeta()
-    data class DefaultWith(val kw: Ident, val value: LitStr) : VariantMeta()
-    data class AsciiCaseInsensitive(val kw: Ident, val value: Boolean) : VariantMeta()
-    data class Props(val kw: Ident, val props: List<Pair<LitStr, Lit>>) : VariantMeta()
+    data class Message(
+        val kw: Ident,
+        val value: LitStr,
+    ) : VariantMeta()
+
+    data class DetailedMessage(
+        val kw: Ident,
+        val value: LitStr,
+    ) : VariantMeta()
+
+    data class Serialize(
+        val kw: Ident,
+        val value: LitStr,
+    ) : VariantMeta()
+
+    data class Documentation(
+        val value: LitStr,
+    ) : VariantMeta()
+
+    data class ToStringMeta(
+        val kw: Ident,
+        val value: LitStr,
+    ) : VariantMeta()
+
+    data class Transparent(
+        val kw: Ident,
+    ) : VariantMeta()
+
+    data class Disabled(
+        val kw: Ident,
+    ) : VariantMeta()
+
+    data class Default(
+        val kw: Ident,
+    ) : VariantMeta()
+
+    data class DefaultWith(
+        val kw: Ident,
+        val value: LitStr,
+    ) : VariantMeta()
+
+    data class AsciiCaseInsensitive(
+        val kw: Ident,
+        val value: Boolean,
+    ) : VariantMeta()
+
+    data class Props(
+        val kw: Ident,
+        val props: List<Pair<LitStr, Lit>>,
+    ) : VariantMeta()
 
     companion object {
         fun parse(input: ParseStream): SynResult<VariantMeta> {
@@ -269,12 +354,13 @@ internal sealed class VariantMeta {
                 }
                 input.peek(Kw.asciiCaseInsensitivePeek) -> {
                     val kw = Kw.asciiCaseInsensitiveParse.parse(input).getOrElse { return SynResult.failure(it) }
-                    val value = if (input.peek(EqPeek)) {
-                        EqParse.parse(input).getOrElse { return SynResult.failure(it) }
-                        LitBoolParse.parse(input).getOrElse { return SynResult.failure(it) }.value()
-                    } else {
-                        true
-                    }
+                    val value =
+                        if (input.peek(EqPeek)) {
+                            EqParse.parse(input).getOrElse { return SynResult.failure(it) }
+                            LitBoolParse.parse(input).getOrElse { return SynResult.failure(it) }.value()
+                        } else {
+                            true
+                        }
                     SynResult.success(AsciiCaseInsensitive(kw, value))
                 }
                 input.peek(Kw.propsPeek) -> {
@@ -300,7 +386,10 @@ internal sealed class VariantMeta {
     }
 }
 
-internal data class Prop(val ident: Ident, val lit: Lit)
+internal data class Prop(
+    val ident: Ident,
+    val lit: Lit,
+)
 
 private fun parseProp(input: ParseStream): SynResult<Prop> {
     val k = identParseAny(input).getOrElse { return SynResult.failure(it) }
@@ -314,10 +403,11 @@ internal interface VariantExt {
 }
 
 internal fun Variant.getMetadata(): SynResult<List<VariantMeta>> {
-    val result = when (val res = getMetadataInner("strum", this.attrs, VariantMeta::parse)) {
-        is SynResult.Success -> res.value.toMutableList()
-        is SynResult.Failure -> return res
-    }
+    val result =
+        when (val res = getMetadataInner("strum", this.attrs, VariantMeta::parse)) {
+            is SynResult.Success -> res.value.toMutableList()
+            is SynResult.Failure -> return res
+        }
 
     for (attr in this.attrs) {
         if (attr.meta.path().isIdent("doc")) {
@@ -334,7 +424,10 @@ internal fun Variant.getMetadata(): SynResult<List<VariantMeta>> {
 }
 
 internal sealed class InnerVariantMeta {
-    data class DefaultWith(val kw: Ident, val value: LitStr) : InnerVariantMeta()
+    data class DefaultWith(
+        val kw: Ident,
+        val value: LitStr,
+    ) : InnerVariantMeta()
 
     companion object {
         fun parse(input: ParseStream): SynResult<InnerVariantMeta> {
@@ -354,9 +447,7 @@ internal interface InnerVariantExt {
     fun getNamedMetadata(): SynResult<List<InnerVariantMeta>>
 }
 
-internal fun Field.getNamedMetadata(): SynResult<List<InnerVariantMeta>> {
-    return getMetadataInner("strum", this.attrs, InnerVariantMeta::parse)
-}
+internal fun Field.getNamedMetadata(): SynResult<List<InnerVariantMeta>> = getMetadataInner("strum", this.attrs, InnerVariantMeta::parse)
 
 private fun <T> getMetadataInner(
     ident: String,
@@ -366,19 +457,21 @@ private fun <T> getMetadataInner(
     val list = mutableListOf<T>()
     for (attr in attrs) {
         if (attr.path().isIdent(ident)) {
-            val parsed = attr.parseArgsWith { input ->
-                val items = mutableListOf<T>()
-                while (!input.isEmpty()) {
-                    val item = parser(input).getOrElse { return@parseArgsWith SynResult.failure(it) }
-                    items.add(item)
-                    if (input.peek(CommaPeek)) {
-                        CommaParse.parse(input).getOrElse { return@parseArgsWith SynResult.failure(it) }
-                    } else {
-                        break
-                    }
-                }
-                SynResult.success(items)
-            }.getOrElse { return SynResult.failure(it) }
+            val parsed =
+                attr
+                    .parseArgsWith { input ->
+                        val items = mutableListOf<T>()
+                        while (!input.isEmpty()) {
+                            val item = parser(input).getOrElse { return@parseArgsWith SynResult.failure(it) }
+                            items.add(item)
+                            if (input.peek(CommaPeek)) {
+                                CommaParse.parse(input).getOrElse { return@parseArgsWith SynResult.failure(it) }
+                            } else {
+                                break
+                            }
+                        }
+                        SynResult.success(items)
+                    }.getOrElse { return SynResult.failure(it) }
             list.addAll(parsed)
         }
     }

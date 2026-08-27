@@ -15,10 +15,11 @@ import io.github.kotlinmania.syn.SynResult
 internal fun enumMessageInner(ast: DeriveInput): SynResult<TokenStream> {
     val name = ast.ident
     val (implGenerics, tyGenerics, whereClause) = ast.generics.splitForImpl()
-    val variants = when (val data = ast.data) {
-        is Data.Enum -> data.variants.toList()
-        else -> return SynResult.failure(nonEnumError())
-    }
+    val variants =
+        when (val data = ast.data) {
+            is Data.Enum -> data.variants.toList()
+            else -> return SynResult.failure(nonEnumError())
+        }
 
     val typeProperties = ast.getTypeProperties().getOrElse { return SynResult.failure(it) }
     val strumModulePath = typeProperties.crateModulePath()
@@ -35,11 +36,12 @@ internal fun enumMessageInner(ast: DeriveInput): SynResult<TokenStream> {
         val documentation = variantProperties.documentation
         val ident = variant.ident
 
-        val params = when (variant.fields) {
-            is Fields.Unit -> quote("")
-            is Fields.Unnamed -> quote("(..)")
-            is Fields.Named -> quote("{..}")
-        }
+        val params =
+            when (variant.fields) {
+                is Fields.Unit -> quote("")
+                is Fields.Unnamed -> quote("(..)")
+                is Fields.Named -> quote("{..}")
+            }
 
         run {
             val serializationVariants = variantProperties.getSerializations(typeProperties.caseStyle)
@@ -66,13 +68,14 @@ internal fun enumMessageInner(ast: DeriveInput): SynResult<TokenStream> {
         }
 
         if (messages != null) {
-            val tokens = quote(
-                "&#name::#ident #params => ::core::option::Option::Some(#messages)",
-                "name" to name,
-                "ident" to ident,
-                "params" to params,
-                "messages" to messages,
-            )
+            val tokens =
+                quote(
+                    "&#name::#ident #params => ::core::option::Option::Some(#messages)",
+                    "name" to name,
+                    "ident" to ident,
+                    "params" to params,
+                    "messages" to messages,
+                )
             arms.add(tokens)
             if (detailedMessages == null) {
                 detailedArms.add(tokens)
@@ -92,14 +95,15 @@ internal fun enumMessageInner(ast: DeriveInput): SynResult<TokenStream> {
         }
 
         if (documentation.isNotEmpty()) {
-            val docCleaned = documentation.map { litStr ->
-                val line = litStr.value()
-                if (line.startsWith(" ")) {
-                    LitStr.new(line.substring(1), litStr.span())
-                } else {
-                    litStr
+            val docCleaned =
+                documentation.map { litStr ->
+                    val line = litStr.value()
+                    if (line.startsWith(" ")) {
+                        LitStr.new(line.substring(1), litStr.span())
+                    } else {
+                        litStr
+                    }
                 }
-            }
             if (docCleaned.size == 1) {
                 val text = docCleaned[0]
                 documentationArms.add(
@@ -135,48 +139,49 @@ internal fun enumMessageInner(ast: DeriveInput): SynResult<TokenStream> {
         documentationArms.add(quote("_ => ::core::option::Option::None"))
     }
 
-    val output = quote(
-        """
-        #[automatically_derived]
-        impl #impl_generics #strum_module_path::EnumMessage for #name #ty_generics #where_clause {
-            #[inline]
-            fn get_message(&self) -> ::core::option::Option<&'static str> {
-                match self {
-                    #(#arms),*
+    val output =
+        quote(
+            """
+            #[automatically_derived]
+            impl #impl_generics #strum_module_path::EnumMessage for #name #ty_generics #where_clause {
+                #[inline]
+                fn get_message(&self) -> ::core::option::Option<&'static str> {
+                    match self {
+                        #(#arms),*
+                    }
                 }
-            }
 
-            #[inline]
-            fn get_detailed_message(&self) -> ::core::option::Option<&'static str> {
-                match self {
-                    #(#detailed_arms),*
+                #[inline]
+                fn get_detailed_message(&self) -> ::core::option::Option<&'static str> {
+                    match self {
+                        #(#detailed_arms),*
+                    }
                 }
-            }
 
-            #[inline]
-            fn get_documentation(&self) -> ::core::option::Option<&'static str> {
-                match self {
-                    #(#documentation_arms),*
+                #[inline]
+                fn get_documentation(&self) -> ::core::option::Option<&'static str> {
+                    match self {
+                        #(#documentation_arms),*
+                    }
                 }
-            }
 
-            #[inline]
-            fn get_serializations(&self) -> &'static [&'static str] {
-                match self {
-                    #(#serializations),*
+                #[inline]
+                fn get_serializations(&self) -> &'static [&'static str] {
+                    match self {
+                        #(#serializations),*
+                    }
                 }
             }
-        }
-        """.trimIndent(),
-        "impl_generics" to implGenerics,
-        "strum_module_path" to strumModulePath,
-        "name" to name,
-        "ty_generics" to tyGenerics,
-        "where_clause" to whereClause,
-        "arms" to arms,
-        "detailed_arms" to detailedArms,
-        "documentation_arms" to documentationArms,
-        "serializations" to serializations,
-    )
+            """.trimIndent(),
+            "impl_generics" to implGenerics,
+            "strum_module_path" to strumModulePath,
+            "name" to name,
+            "ty_generics" to tyGenerics,
+            "where_clause" to whereClause,
+            "arms" to arms,
+            "detailed_arms" to detailedArms,
+            "documentation_arms" to documentationArms,
+            "serializations" to serializations,
+        )
     return SynResult.success(output)
 }

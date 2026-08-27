@@ -16,10 +16,11 @@ internal fun enumVariantNamesInner(ast: DeriveInput): SynResult<TokenStream> {
     val gen = ast.generics
     val (implGenerics, tyGenerics, whereClause) = gen.splitForImpl()
 
-    val variants = when (val data = ast.data) {
-        is Data.Enum -> data.variants.toList()
-        else -> return SynResult.failure(nonEnumError())
-    }
+    val variants =
+        when (val data = ast.data) {
+            is Data.Enum -> data.variants.toList()
+            else -> return SynResult.failure(nonEnumError())
+        }
 
     val typeProperties = ast.getTypeProperties().getOrElse { return SynResult.failure(it) }
     val strumModulePath = typeProperties.crateModulePath()
@@ -27,27 +28,29 @@ internal fun enumVariantNamesInner(ast: DeriveInput): SynResult<TokenStream> {
     val names = mutableListOf<LitStr>()
     for (v in variants) {
         val props = v.getVariantProperties().getOrElse { return SynResult.failure(it) }
-        val preferred = props.getPreferredName(
-            typeProperties.caseStyle,
-            typeProperties.prefix,
-            typeProperties.suffix,
-        )
+        val preferred =
+            props.getPreferredName(
+                typeProperties.caseStyle,
+                typeProperties.prefix,
+                typeProperties.suffix,
+            )
         names.add(preferred)
     }
 
-    val output = quote(
-        """
-        #[automatically_derived]
-        impl #impl_generics #strum_module_path::VariantNames for #name #ty_generics #where_clause {
-            const VARIANTS: &'static [&'static str] = &[ #(#names),* ];
-        }
-        """.trimIndent(),
-        "impl_generics" to implGenerics,
-        "strum_module_path" to strumModulePath,
-        "name" to name,
-        "ty_generics" to tyGenerics,
-        "where_clause" to whereClause,
-        "names" to names,
-    )
+    val output =
+        quote(
+            """
+            #[automatically_derived]
+            impl #impl_generics #strum_module_path::VariantNames for #name #ty_generics #where_clause {
+                const VARIANTS: &'static [&'static str] = &[ #(#names),* ];
+            }
+            """.trimIndent(),
+            "impl_generics" to implGenerics,
+            "strum_module_path" to strumModulePath,
+            "name" to name,
+            "ty_generics" to tyGenerics,
+            "where_clause" to whereClause,
+            "names" to names,
+        )
     return SynResult.success(output)
 }
