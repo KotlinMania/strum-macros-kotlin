@@ -5,12 +5,12 @@ Based on AST analysis, here are the concrete next steps.
 ## Summary
 
 - **Files Present:** 24/24 (100.0%)
-- **Function parity:** 62/63 matched (target 97) — 98.4%
-- **Class/type parity:** 19/20 matched (target 49) — 95.0%
-- **Combined symbol parity:** 81/83 matched (target 146) — 97.6%
+- **Function parity:** 62/63 matched (target 82) — 98.4%
+- **Class/type parity:** 19/20 matched (target 47) — 95.0%
+- **Combined symbol parity:** 81/83 matched (target 129) — 97.6%
 - **Average inline-code cosine:** 0.62 (function body across 21 matched files)
 - **Average documentation cosine:** 0.02 (doc text across 21 matched files)
-- **Cheat-zeroed Files:** 4
+- **Cheat-zeroed Files:** 3
 - **Critical Issues:** 7 files with <0.60 function similarity
 
 ## Priority 1: Fix Incomplete High-Dependency Files
@@ -281,17 +281,6 @@ Every matched file is listed below with function and type symbol parity.
 - **Types:** 0/0 matched
 - **Missing types:** _none_
 
-### 24. macros.mod
-
-- **Target:** `macros.Mod [STUB]`
-- **Similarity:** 0.00
-- **Dependents:** 0
-- **Priority Score:** 10.0
-- **Functions:** 0/0 matched (target 15)
-- **Missing functions:** _none_
-- **Types:** 0/0 matched (target 2)
-- **Missing types:** _none_
-
 ## Success Criteria
 
 For each file to be considered "complete":
@@ -300,4 +289,17 @@ For each file to be considered "complete":
 - All tests ported
 - Documentation ported
 - port-lint header present
+
+## Reexport / Wiring Modules
+
+These files match `reexport_modules` patterns in `.ast_distance_config.json`. They are filtered out of
+normal priority and missing-file ladders because they are wiring
+modules, not direct logic ports. Consult them for call-site routing;
+do not treat them as the next implementation target by default.
+
+### Matched
+
+| Source | Target | Path |
+|--------|--------|------|
+| `macros.mod` | `macros.Mod` | `macros/mod` |
 
