@@ -1,4 +1,4 @@
-// port-lint: tests macros/mod.rs
+// port-lint: tests strum_macros/src/macros/mod.rs
 package io.github.kotlinmania.strummacros
 
 import io.github.kotlinmania.strummacros.macros.enumCountInner

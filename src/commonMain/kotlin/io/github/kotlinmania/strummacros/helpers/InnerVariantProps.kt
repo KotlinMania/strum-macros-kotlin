@@ -1,4 +1,4 @@
-// port-lint: source helpers/inner_variant_props.rs
+// port-lint: source strum_macros/src/helpers/inner_variant_props.rs
 package io.github.kotlinmania.strummacros.helpers
 
 import io.github.kotlinmania.procmacro2.Ident

@@ -1,4 +1,4 @@
-// port-lint: source macros/from_repr.rs
+// port-lint: source strum_macros/src/macros/from_repr.rs
 package io.github.kotlinmania.strummacros.macros
 
 import io.github.kotlinmania.procmacro2.Span
