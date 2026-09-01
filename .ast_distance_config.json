@@ -16,7 +16,20 @@
     "lint": true
   },
   "reexport_modules": [
+    "lib",
+    "lib.rs",
+    "strum_macros/src/lib.rs",
     "macros/mod",
-    "macros.mod"
+    "macros.mod",
+    "macros/mod.rs",
+    "strum_macros/src/macros/mod.rs",
+    "macros/strings/mod",
+    "macros.strings.mod",
+    "macros/strings/mod.rs",
+    "strum_macros/src/macros/strings/mod.rs",
+    "helpers/mod",
+    "helpers.mod",
+    "helpers/mod.rs",
+    "strum_macros/src/helpers/mod.rs"
   ]
 }
