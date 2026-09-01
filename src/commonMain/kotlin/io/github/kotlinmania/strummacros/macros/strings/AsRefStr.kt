@@ -1,4 +1,4 @@
-// port-lint: source strum_macros/src/macros/strings/as_ref_str.rs
+// port-lint: source macros/strings/as_ref_str.rs
 package io.github.kotlinmania.strummacros.macros.strings
 
 import io.github.kotlinmania.procmacro2.TokenStream

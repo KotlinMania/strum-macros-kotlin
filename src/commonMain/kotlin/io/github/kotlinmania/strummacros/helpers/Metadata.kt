@@ -1,4 +1,4 @@
-// port-lint: source strum_macros/src/helpers/metadata.rs
+// port-lint: source helpers/metadata.rs
 package io.github.kotlinmania.strummacros.helpers
 
 import io.github.kotlinmania.procmacro2.Ident
