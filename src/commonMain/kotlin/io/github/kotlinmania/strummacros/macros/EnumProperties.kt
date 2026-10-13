@@ -63,13 +63,13 @@ internal fun enumPropertiesInner(ast: DeriveInput): SynResult<TokenStream> {
                     else -> error("unsupported property literal type")
                 }
 
-            arms[propertyType]!!.add(quote("#key => ::core::option::Option::Some( #value )", "key" to key, "value" to value))
+            arms.getValue(propertyType).add(quote("#key => ::core::option::Option::Some( #value )", "key" to key, "value" to value))
         }
 
         for (property in PROPERTY_TYPES) {
-            arms[property]!!.add(quote("_ => ::core::option::Option::None"))
-            val armsAsString = arms[property]!!
-            builtArms[property]!!.add(
+            arms.getValue(property).add(quote("_ => ::core::option::Option::None"))
+            val armsAsString = arms.getValue(property)
+            builtArms.getValue(property).add(
                 quote(
                     """
                     &#name::#ident #params => {
@@ -93,9 +93,9 @@ internal fun enumPropertiesInner(ast: DeriveInput): SynResult<TokenStream> {
         }
     }
 
-    val builtStringArms = builtArms[PropertyType.String]!!
-    val builtIntArms = builtArms[PropertyType.Integer]!!
-    val builtBoolArms = builtArms[PropertyType.Bool]!!
+    val builtStringArms = builtArms.getValue(PropertyType.String)
+    val builtIntArms = builtArms.getValue(PropertyType.Integer)
+    val builtBoolArms = builtArms.getValue(PropertyType.Bool)
 
     val output =
         quote(
