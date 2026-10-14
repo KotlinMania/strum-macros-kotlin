@@ -38,8 +38,8 @@ internal fun staticVariantsArrayInner(ast: DeriveInput): SynResult<TokenStream> 
         quote(
             """
             #[automatically_derived]
-            impl #impl_generics #strum_module_path::VariantArray for #name #ty_generics #where_clause {
-                const VARIANTS: &'static [Self] = &[ #(#name::#idents),* ];
+            impl `#`impl_generics `#`strum_module_path::VariantArray for `#`name `#`ty_generics `#`where_clause {
+                const VARIANTS: &'static [Self] = &[ `#`(`#`name::`#`idents),* ];
             }
             """.trimIndent(),
             "impl_generics" to implGenerics,

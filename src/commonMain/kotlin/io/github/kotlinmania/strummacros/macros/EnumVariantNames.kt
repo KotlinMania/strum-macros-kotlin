@@ -41,8 +41,8 @@ internal fun enumVariantNamesInner(ast: DeriveInput): SynResult<TokenStream> {
         quote(
             """
             #[automatically_derived]
-            impl #impl_generics #strum_module_path::VariantNames for #name #ty_generics #where_clause {
-                const VARIANTS: &'static [&'static str] = &[ #(#names),* ];
+            impl `#`impl_generics `#`strum_module_path::VariantNames for `#`name `#`ty_generics `#`where_clause {
+                const VARIANTS: &'static [&'static str] = &[ `#`(`#`names),* ];
             }
             """.trimIndent(),
             "impl_generics" to implGenerics,

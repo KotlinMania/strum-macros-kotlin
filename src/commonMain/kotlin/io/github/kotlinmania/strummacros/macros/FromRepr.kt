@@ -72,7 +72,7 @@ internal fun fromReprInner(ast: DeriveInput): SynResult<TokenStream> {
                 is Fields.Unnamed -> {
                     hasAdditionalData = true
                     val defaults = List(fields.fields.unnamed.len()) { quote("::core::default::Default::default()") }
-                    quote("(#(#defaults),*)", "defaults" to defaults)
+                    quote("(`#`(`#`defaults),*)", "defaults" to defaults)
                 }
                 is Fields.Named -> {
                     hasAdditionalData = true
@@ -80,8 +80,8 @@ internal fun fromReprInner(ast: DeriveInput): SynResult<TokenStream> {
                         fields.fields.named
                             .toList()
                             .mapNotNull { it.ident }
-                    val fieldAssignments = fieldIdents.map { f -> quote("#f: ::core::default::Default::default()", "f" to f) }
-                    quote("{#(#field_assignments),*}", "field_assignments" to fieldAssignments)
+                    val fieldAssignments = fieldIdents.map { f -> quote("`#`f: ::core::default::Default::default()", "f" to f) }
+                    quote("{`#`(`#`field_assignments),*}", "field_assignments" to fieldAssignments)
                 }
             }
 
@@ -91,10 +91,10 @@ internal fun fromReprInner(ast: DeriveInput): SynResult<TokenStream> {
         val constValExpr =
             if (variant.discriminant != null) {
                 val expr = variant.discriminant!!.expr
-                quote("#expr", "expr" to expr)
+                quote("`#`expr", "expr" to expr)
             } else if (prevConstVarIdent != null) {
                 val prev = prevConstVarIdent
-                quote("#prev + 1", "prev" to prev)
+                quote("`#`prev + 1", "prev" to prev)
             } else {
                 quote("0")
             }
@@ -103,7 +103,7 @@ internal fun fromReprInner(ast: DeriveInput): SynResult<TokenStream> {
             quote(
                 """
                 #[allow(non_upper_case_globals)]
-                const #const_var_ident: #discriminant_type = #const_val_expr;
+                const `#`const_var_ident: `#`discriminant_type = `#`const_val_expr;
                 """.trimIndent(),
                 "const_var_ident" to constVarIdent,
                 "discriminant_type" to discriminantType,
@@ -112,7 +112,7 @@ internal fun fromReprInner(ast: DeriveInput): SynResult<TokenStream> {
         )
         arms.add(
             quote(
-                "v if v == #const_var_ident => ::core::option::Option::Some(#name::#ident #params)",
+                "v if v == `#`const_var_ident => ::core::option::Option::Some(`#`name::`#`ident `#`params)",
                 "const_var_ident" to constVarIdent,
                 "name" to name,
                 "ident" to ident,
@@ -137,13 +137,13 @@ internal fun fromReprInner(ast: DeriveInput): SynResult<TokenStream> {
             """
             #[allow(clippy::use_self)]
             #[automatically_derived]
-            impl #impl_generics #name #ty_generics #where_clause {
+            impl `#`impl_generics `#`name `#`ty_generics `#`where_clause {
                 #[doc = "Try to create [Self] from the raw representation"]
                 #[inline]
-                #vis #const_if_possible fn from_repr(discriminant: #discriminant_type) -> Option<#name #ty_generics> {
-                    #(#constant_defs)*
+                `#`vis `#`const_if_possible fn from_repr(discriminant: `#`discriminant_type) -> Option<`#`name `#`ty_generics> {
+                    `#`(`#`constant_defs)*
                     match discriminant {
-                        #(#arms),*
+                        `#`(`#`arms),*
                     }
                 }
             }

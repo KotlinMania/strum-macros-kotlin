@@ -63,7 +63,7 @@ internal fun enumPropertiesInner(ast: DeriveInput): SynResult<TokenStream> {
                     else -> error("unsupported property literal type")
                 }
 
-            arms.getValue(propertyType).add(quote("#key => ::core::option::Option::Some( #value )", "key" to key, "value" to value))
+            arms.getValue(propertyType).add(quote("`#`key => ::core::option::Option::Some( `#`value )", "key" to key, "value" to value))
         }
 
         for (property in PROPERTY_TYPES) {
@@ -72,9 +72,9 @@ internal fun enumPropertiesInner(ast: DeriveInput): SynResult<TokenStream> {
             builtArms.getValue(property).add(
                 quote(
                     """
-                    &#name::#ident #params => {
+                    &`#`name::`#`ident `#`params => {
                         match prop {
-                            #(#arms_as_string),*
+                            `#`(`#`arms_as_string),*
                         }
                     }
                     """.trimIndent(),
@@ -101,25 +101,25 @@ internal fun enumPropertiesInner(ast: DeriveInput): SynResult<TokenStream> {
         quote(
             """
             #[automatically_derived]
-            impl #impl_generics #strum_module_path::EnumProperty for #name #ty_generics #where_clause {
+            impl `#`impl_generics `#`strum_module_path::EnumProperty for `#`name `#`ty_generics `#`where_clause {
                 #[inline]
                 fn get_str(&self, prop: &str) -> ::core::option::Option<&'static str> {
                     match self {
-                        #(#built_string_arms),*
+                        `#`(`#`built_string_arms),*
                     }
                 }
 
                 #[inline]
                 fn get_int(&self, prop: &str) -> ::core::option::Option<i64> {
                     match self {
-                        #(#built_int_arms),*
+                        `#`(`#`built_int_arms),*
                     }
                 }
 
                 #[inline]
                 fn get_bool(&self, prop: &str) -> ::core::option::Option<bool> {
                     match self {
-                        #(#built_bool_arms),*
+                        `#`(`#`built_bool_arms),*
                     }
                 }
 

@@ -43,7 +43,7 @@ internal fun toStringInner(ast: DeriveInput): SynResult<TokenStream> {
                             ),
                         )
                     }
-                    arms.add(quote("#name::#ident(ref s) => ::std::string::String::from(s)", "name" to name, "ident" to ident))
+                    arms.add(quote("`#`name::`#`ident(ref s) => ::std::string::String::from(s)", "name" to name, "ident" to ident))
                     continue
                 }
                 else -> {
@@ -71,7 +71,7 @@ internal fun toStringInner(ast: DeriveInput): SynResult<TokenStream> {
                 is Fields.Named -> quote("{..}")
             }
 
-        arms.add(quote("#name::#ident #params => ::std::string::String::from(#output)", "name" to name, "ident" to ident, "params" to params, "output" to output))
+        arms.add(quote("`#`name::`#`ident `#`params => ::std::string::String::from(`#`output)", "name" to name, "ident" to ident, "params" to params, "output" to output))
     }
 
     if (arms.size < variants.size) {
@@ -83,10 +83,10 @@ internal fun toStringInner(ast: DeriveInput): SynResult<TokenStream> {
             """
             #[allow(clippy::use_self)]
             #[automatically_derived]
-            impl #impl_generics ::std::string::ToString for #name #ty_generics #where_clause {
+            impl `#`impl_generics ::std::string::ToString for `#`name `#`ty_generics `#`where_clause {
                 fn to_string(&self) -> ::std::string::String {
                     match *self {
-                        #(#arms),*
+                        `#`(`#`arms),*
                     }
                 }
             }
