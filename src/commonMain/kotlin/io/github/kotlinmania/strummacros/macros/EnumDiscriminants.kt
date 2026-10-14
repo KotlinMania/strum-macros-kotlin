@@ -46,7 +46,7 @@ internal fun enumDiscriminantsInner(ast: DeriveInput): SynResult<TokenStream> {
         val discriminant =
             variant.discriminant?.let { eqExpr ->
                 val expr = eqExpr.expr
-                quote("= #expr", "expr" to expr)
+                quote("= `#`expr", "expr" to expr)
             }
 
         val attrs = mutableListOf<TokenStream>()
@@ -75,7 +75,7 @@ internal fun enumDiscriminantsInner(ast: DeriveInput): SynResult<TokenStream> {
                 if (passthroughAttribute.toList().isEmpty()) {
                     return SynResult.failure(strumDiscriminantsPassthroughError(passthroughGroup.span()))
                 }
-                attrs.add(quote("#[#passthroughAttribute]", "passthroughAttribute" to passthroughAttribute))
+                attrs.add(quote("#[`#`passthroughAttribute]", "passthroughAttribute" to passthroughAttribute))
                 continue
             }
 
@@ -105,7 +105,7 @@ internal fun enumDiscriminantsInner(ast: DeriveInput): SynResult<TokenStream> {
 
     val derivesTokens =
         quote(
-            "#[derive(Clone, Copy, Debug, PartialEq, Eq, #(#derives),*)]",
+            "#[derive(Clone, Copy, Debug, PartialEq, Eq, `#`(`#`derives),*)]",
             "derives" to derives,
         )
 
@@ -115,14 +115,14 @@ internal fun enumDiscriminantsInner(ast: DeriveInput): SynResult<TokenStream> {
 
     val passThroughAttributes = typeProperties.discriminantOthers.toMutableList()
     val hasDoc = passThroughAttributes.any { it.path().isIdent("doc") }
-    val passThroughTokens: MutableList<TokenStream> = passThroughAttributes.map { it.toTokenStream() }.toMutableList()
+    val passThroughTokens: MutableList<TokenStream> = passThroughAttributes.map { quote("#[`#`a]", "a" to it.toTokenStream()) }.toMutableList()
     if (!hasDoc) {
-        passThroughTokens.add(quote("""doc = "Auto-generated discriminant enum variants""""))
+        passThroughTokens.add(quote("""#[doc = "Auto-generated discriminant enum variants"]"""))
     }
 
     val reprTokens =
         typeProperties.enumRepr?.let { repr ->
-            quote("#[repr(#repr)]", "repr" to repr)
+            quote("#[repr(`#`repr)]", "repr" to repr)
         }
 
     val arms =
@@ -135,7 +135,7 @@ internal fun enumDiscriminantsInner(ast: DeriveInput): SynResult<TokenStream> {
                     is Fields.Named -> quote("{ .. }")
                 }
             quote(
-                "#name::#ident #params => #discriminantsName::#ident",
+                "`#`name::`#`ident `#`params => `#`discriminantsName::`#`ident",
                 "name" to name,
                 "ident" to ident,
                 "params" to params,
@@ -148,7 +148,7 @@ internal fun enumDiscriminantsInner(ast: DeriveInput): SynResult<TokenStream> {
             quote("unreachable!()")
         } else {
             quote(
-                "match val { #(#arms),* }",
+                "match val { `#`(`#`arms),* }",
                 "arms" to arms,
             )
         }
@@ -158,10 +158,10 @@ internal fun enumDiscriminantsInner(ast: DeriveInput): SynResult<TokenStream> {
         quote(
             """
             #[automatically_derived]
-            impl #implGenerics ::core::convert::From< #name #tyGenerics > for #discriminantsName #whereClause {
+            impl `#`implGenerics ::core::convert::From< `#`name `#`tyGenerics > for `#`discriminantsName `#`whereClause {
                 #[inline]
-                fn from(val: #name #tyGenerics) -> #discriminantsName {
-                    #fromFnBody
+                fn from(val: `#`name `#`tyGenerics) -> `#`discriminantsName {
+                    `#`fromFnBody
                 }
             }
             """.trimIndent(),
@@ -177,17 +177,17 @@ internal fun enumDiscriminantsInner(ast: DeriveInput): SynResult<TokenStream> {
         run {
             val generics = ast.generics.copy()
             val lifetime = GenericParam.LifetimeParam.new(Lifetime.new("'_enum", Span.callSite()))
-            val enumLife = quote("& #lifetime", "lifetime" to lifetime)
+            val enumLife = quote("& `#`lifetime", "lifetime" to lifetime)
             generics.params.pushValue(lifetime)
             val (refImplGenerics, _, _) = generics.splitForImpl()
 
             quote(
                 """
                 #[automatically_derived]
-                impl #refImplGenerics ::core::convert::From< #enumLife #name #tyGenerics > for #discriminantsName #whereClause {
+                impl `#`refImplGenerics ::core::convert::From< `#`enumLife `#`name `#`tyGenerics > for `#`discriminantsName `#`whereClause {
                     #[inline]
-                    fn from(val: #enumLife #name #tyGenerics) -> #discriminantsName {
-                        #fromFnBody
+                    fn from(val: `#`enumLife `#`name `#`tyGenerics) -> `#`discriminantsName {
+                        `#`fromFnBody
                     }
                 }
                 """.trimIndent(),
@@ -207,8 +207,8 @@ internal fun enumDiscriminantsInner(ast: DeriveInput): SynResult<TokenStream> {
                 quote(
                     """
                     #[automatically_derived]
-                    impl #implGenerics #strumModulePath::IntoDiscriminant for #name #tyGenerics #whereClause {
-                        type Discriminant = #discriminantsName;
+                    impl `#`implGenerics `#`strumModulePath::IntoDiscriminant for `#`name `#`tyGenerics `#`whereClause {
+                        type Discriminant = `#`discriminantsName;
                     
                         #[inline]
                         fn discriminant(&self) -> Self::Discriminant {
@@ -229,16 +229,16 @@ internal fun enumDiscriminantsInner(ast: DeriveInput): SynResult<TokenStream> {
     val output =
         quote(
             """
-            #derives
-            #repr
-            #(#[ #passThroughAttributes ])*
-            #discriminantsVis enum #discriminantsName {
-                #(#discriminants),*
+            `#`derives
+            `#`repr
+            `#`(`#`passThroughAttributes)*
+            `#`discriminantsVis enum `#`discriminantsName {
+                `#`(`#`discriminants),*
             }
 
-            #implIntoDiscriminant
-            #implFrom
-            #implFromRef
+            `#`implIntoDiscriminant
+            `#`implFrom
+            `#`implFromRef
             """.trimIndent(),
             "derives" to derivesTokens,
             "repr" to reprTokens,

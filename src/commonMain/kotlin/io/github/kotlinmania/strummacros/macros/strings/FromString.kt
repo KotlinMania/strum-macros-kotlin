@@ -65,7 +65,7 @@ internal fun fromStringInner(ast: DeriveInput): SynResult<TokenStream> {
                             ),
                         )
                     }
-                    defaultMatchArm = quote("#name::#ident(s.into())", "name" to name, "ident" to ident)
+                    defaultMatchArm = quote("`#`name::`#`ident(s.into())", "name" to name, "ident" to ident)
                 }
                 is Fields.Named -> {
                     if (fields.fields.named.len() != 1) {
@@ -80,7 +80,7 @@ internal fun fromStringInner(ast: DeriveInput): SynResult<TokenStream> {
                         fields.fields.named
                             .last()!!
                             .ident!!
-                    defaultMatchArm = quote("#name::#ident { #fieldName : s.into() }", "name" to name, "ident" to ident, "fieldName" to fieldName)
+                    defaultMatchArm = quote("`#`name::`#`ident { `#`fieldName : s.into() }", "name" to name, "ident" to ident, "fieldName" to fieldName)
                 }
                 else -> {
                     return SynResult.failure(
@@ -101,11 +101,11 @@ internal fun fromStringInner(ast: DeriveInput): SynResult<TokenStream> {
                     if (variantProperties.defaultWith != null) {
                         val value = variantProperties.defaultWith!!
                         val func = Ident.new(value.value(), value.span())
-                        val defaults = listOf(quote("#func()", "func" to func))
-                        quote("(#(#defaults),*)", "defaults" to defaults)
+                        val defaults = listOf(quote("`#`func()", "func" to func))
+                        quote("(`#`(`#`defaults),*)", "defaults" to defaults)
                     } else {
                         val defaults = List(fields.fields.unnamed.len()) { quote("Default::default()") }
-                        quote("(#(#defaults),*)", "defaults" to defaults)
+                        quote("(`#`(`#`defaults),*)", "defaults" to defaults)
                     }
                 }
                 is Fields.Named -> {
@@ -116,12 +116,12 @@ internal fun fromStringInner(ast: DeriveInput): SynResult<TokenStream> {
                         if (meta.defaultWith != null) {
                             val defaultWith = meta.defaultWith!!
                             val func = Ident.new(defaultWith.value(), defaultWith.span())
-                            defaults.add(quote("#fieldIdent: #func()", "fieldIdent" to fieldIdent, "func" to func))
+                            defaults.add(quote("`#`fieldIdent: `#`func()", "fieldIdent" to fieldIdent, "func" to func))
                         } else {
-                            defaults.add(quote("#fieldIdent: Default::default()", "fieldIdent" to fieldIdent))
+                            defaults.add(quote("`#`fieldIdent: Default::default()", "fieldIdent" to fieldIdent))
                         }
                     }
-                    quote("{#(#defaults),*}", "defaults" to defaults)
+                    quote("{`#`(`#`defaults),*}", "defaults" to defaults)
                 }
             }
 
@@ -129,19 +129,19 @@ internal fun fromStringInner(ast: DeriveInput): SynResult<TokenStream> {
 
         for (serialization in variantProperties.getSerializations(typeProperties.caseStyle)) {
             if (typeProperties.usePhf) {
-                phfExactMatchArms.add(quote("#serialization => #name::#ident #params,", "serialization" to serialization, "name" to name, "ident" to ident, "params" to params))
+                phfExactMatchArms.add(quote("`#`serialization => `#`name::`#`ident `#`params,", "serialization" to serialization, "name" to name, "ident" to ident, "params" to params))
                 if (isAsciiCaseInsensitive) {
                     val serString = serialization.value()
                     val lower = LitStr.new(serString.lowercase(), serialization.span())
                     val upper = LitStr.new(serString.uppercase(), serialization.span())
-                    phfExactMatchArms.add(quote("#lower => #name::#ident #params,", "lower" to lower, "name" to name, "ident" to ident, "params" to params))
-                    phfExactMatchArms.add(quote("#upper => #name::#ident #params,", "upper" to upper, "name" to name, "ident" to ident, "params" to params))
-                    standardMatchArms.add(quote("s if s.eq_ignore_ascii_case(#serialization) => #name::#ident #params,", "serialization" to serialization, "name" to name, "ident" to ident, "params" to params))
+                    phfExactMatchArms.add(quote("`#`lower => `#`name::`#`ident `#`params,", "lower" to lower, "name" to name, "ident" to ident, "params" to params))
+                    phfExactMatchArms.add(quote("`#`upper => `#`name::`#`ident `#`params,", "upper" to upper, "name" to name, "ident" to ident, "params" to params))
+                    standardMatchArms.add(quote("s if s.eq_ignore_ascii_case(`#`serialization) => `#`name::`#`ident `#`params,", "serialization" to serialization, "name" to name, "ident" to ident, "params" to params))
                 }
             } else if (!isAsciiCaseInsensitive) {
-                standardMatchArms.add(quote("#serialization => #name::#ident #params,", "serialization" to serialization, "name" to name, "ident" to ident, "params" to params))
+                standardMatchArms.add(quote("`#`serialization => `#`name::`#`ident `#`params,", "serialization" to serialization, "name" to name, "ident" to ident, "params" to params))
             } else {
-                standardMatchArms.add(quote("s if s.eq_ignore_ascii_case(#serialization) => #name::#ident #params,", "serialization" to serialization, "name" to name, "ident" to ident, "params" to params))
+                standardMatchArms.add(quote("s if s.eq_ignore_ascii_case(`#`serialization) => `#`name::`#`ident `#`params,", "serialization" to serialization, "name" to name, "ident" to ident, "params" to params))
             }
         }
     }
@@ -151,11 +151,11 @@ internal fun fromStringInner(ast: DeriveInput): SynResult<TokenStream> {
     val errTy =
         if (typeProperties.parseErrTy != null) {
             val ty = typeProperties.parseErrTy!!
-            quote("#ty", "ty" to ty)
+            quote("`#`ty", "ty" to ty)
         } else if (isInfallible) {
             quote("::core::convert::Infallible")
         } else {
-            quote("#strum_module_path::ParseError", "strum_module_path" to strumModulePath)
+            quote("`#`strum_module_path::ParseError", "strum_module_path" to strumModulePath)
         }
 
     val defaultArmTokens =
@@ -163,11 +163,11 @@ internal fun fromStringInner(ast: DeriveInput): SynResult<TokenStream> {
             defaultMatchArm
         } else if (typeProperties.parseErrFn != null) {
             val f = typeProperties.parseErrFn!!
-            quote("return ::core::result::Result::Err(#f(s))", "f" to f)
+            quote("return ::core::result::Result::Err(`#`f(s))", "f" to f)
         } else if (hasCustomErrTy) {
             return SynResult.failure(missingParseErrAttrError())
         } else {
-            quote("return ::core::result::Result::Err(#strum_module_path::ParseError::VariantNotFound)", "strum_module_path" to strumModulePath)
+            quote("return ::core::result::Result::Err(`#`strum_module_path::ParseError::VariantNotFound)", "strum_module_path" to strumModulePath)
         }
 
     var matchExpression =
@@ -177,8 +177,8 @@ internal fun fromStringInner(ast: DeriveInput): SynResult<TokenStream> {
             quote(
                 """
                 match s {
-                    #(#standard_match_arms)*
-                    _ => #default_arm,
+                    `#`(`#`standard_match_arms)*
+                    _ => `#`default_arm,
                 }
                 """.trimIndent(),
                 "standard_match_arms" to standardMatchArms,
@@ -190,15 +190,15 @@ internal fun fromStringInner(ast: DeriveInput): SynResult<TokenStream> {
         matchExpression =
             quote(
                 """
-                use #strum_module_path::_private_phf_reexport_for_macro_if_phf_feature as phf;
-                static PHF: phf::Map<&'static str, #name> = phf::phf_map! {
-                    #(#phf_exact_match_arms)*
+                use `#`strum_module_path::_private_phf_reexport_for_macro_if_phf_feature as phf;
+                static PHF: phf::Map<&'static str, `#`name> = phf::phf_map! {
+                    `#`(`#`phf_exact_match_arms)*
                 };
 
                 if let Some(value) = PHF.get(s).cloned() {
                     value
                 } else {
-                    #match_expression
+                    `#`match_expression
                 }
                 """.trimIndent(),
                 "strum_module_path" to strumModulePath,
@@ -214,10 +214,10 @@ internal fun fromStringInner(ast: DeriveInput): SynResult<TokenStream> {
                 """
                 #[allow(clippy::use_self)]
                 #[automatically_derived]
-                impl #impl_generics ::core::convert::From<&str> for #name #ty_generics #where_clause {
+                impl `#`impl_generics ::core::convert::From<&str> for `#`name `#`ty_generics `#`where_clause {
                     #[inline]
-                    fn from(s: &str) -> #name #ty_generics {
-                        #match_expression
+                    fn from(s: &str) -> `#`name `#`ty_generics {
+                        `#`match_expression
                     }
                 }
                 """.trimIndent(),
@@ -232,13 +232,13 @@ internal fun fromStringInner(ast: DeriveInput): SynResult<TokenStream> {
                 """
                 #[allow(clippy::use_self)]
                 #[automatically_derived]
-                impl #impl_generics ::core::convert::TryFrom<&str> for #name #ty_generics #where_clause {
-                    type Error = #err_ty;
+                impl `#`impl_generics ::core::convert::TryFrom<&str> for `#`name `#`ty_generics `#`where_clause {
+                    type Error = `#`err_ty;
 
                     #[inline]
-                    fn try_from(s: &str) -> ::core::result::Result< #name #ty_generics , <Self as ::core::convert::TryFrom<&str>>::Error> {
+                    fn try_from(s: &str) -> ::core::result::Result< `#`name `#`ty_generics , <Self as ::core::convert::TryFrom<&str>>::Error> {
                         Ok({
-                            #match_expression
+                            `#`match_expression
                         })
                     }
                 }
@@ -257,11 +257,11 @@ internal fun fromStringInner(ast: DeriveInput): SynResult<TokenStream> {
             """
             #[allow(clippy::use_self)]
             #[automatically_derived]
-            impl #impl_generics ::core::str::FromStr for #name #ty_generics #where_clause {
-                type Err = #err_ty;
+            impl `#`impl_generics ::core::str::FromStr for `#`name `#`ty_generics `#`where_clause {
+                type Err = `#`err_ty;
 
                 #[inline]
-                fn from_str(s: &str) -> ::core::result::Result< #name #ty_generics , <Self as ::core::str::FromStr>::Err> {
+                fn from_str(s: &str) -> ::core::result::Result< `#`name `#`ty_generics , <Self as ::core::str::FromStr>::Err> {
                     <Self as ::core::convert::TryFrom<&str>>::try_from(s)
                 }
             }
@@ -276,8 +276,8 @@ internal fun fromStringInner(ast: DeriveInput): SynResult<TokenStream> {
     val output =
         quote(
             """
-            #from_str
-            #from_impl
+            `#`from_str
+            `#`from_impl
             """.trimIndent(),
             "from_str" to fromStr,
             "from_impl" to fromImpl,

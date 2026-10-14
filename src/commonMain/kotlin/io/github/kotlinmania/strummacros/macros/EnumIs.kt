@@ -35,10 +35,10 @@ internal fun enumIsInner(ast: DeriveInput): SynResult<TokenStream> {
                 """
                 #[must_use]
                 #[inline]
-                #[doc = #doc_comment]
-                pub const fn #fn_name(&self) -> bool {
+                #[doc = `#`doc_comment]
+                pub const fn `#`fn_name(&self) -> bool {
                     match self {
-                        &#enum_name::#variant_name { .. } => true,
+                        &`#`enum_name::`#`variant_name { .. } => true,
                         _ => false
                     }
                 }
@@ -55,8 +55,8 @@ internal fun enumIsInner(ast: DeriveInput): SynResult<TokenStream> {
         quote(
             """
             #[automatically_derived]
-            impl #impl_generics #enum_name #ty_generics #where_clause {
-                #(#variants)*
+            impl `#`impl_generics `#`enum_name `#`ty_generics `#`where_clause {
+                `#`(`#`variants)*
             }
             """.trimIndent(),
             "impl_generics" to implGenerics,

@@ -49,8 +49,8 @@ internal fun enumMessageInner(ast: DeriveInput): SynResult<TokenStream> {
             serializations.add(
                 quote(
                     """
-                    &#name::#ident #params => {
-                        static ARR: [&'static str; #count] = [#(#serialization_variants),*];
+                    &`#`name::`#`ident `#`params => {
+                        static ARR: [&'static str; `#`count] = [`#`(`#`serialization_variants),*];
                         &ARR
                     }
                     """.trimIndent(),
@@ -70,7 +70,7 @@ internal fun enumMessageInner(ast: DeriveInput): SynResult<TokenStream> {
         if (messages != null) {
             val tokens =
                 quote(
-                    "&#name::#ident #params => ::core::option::Option::Some(#messages)",
+                    "&`#`name::`#`ident `#`params => ::core::option::Option::Some(`#`messages)",
                     "name" to name,
                     "ident" to ident,
                     "params" to params,
@@ -85,7 +85,7 @@ internal fun enumMessageInner(ast: DeriveInput): SynResult<TokenStream> {
         if (detailedMessages != null) {
             detailedArms.add(
                 quote(
-                    "&#name::#ident #params => ::core::option::Option::Some(#detailed_messages)",
+                    "&`#`name::`#`ident `#`params => ::core::option::Option::Some(`#`detailed_messages)",
                     "name" to name,
                     "ident" to ident,
                     "params" to params,
@@ -108,7 +108,7 @@ internal fun enumMessageInner(ast: DeriveInput): SynResult<TokenStream> {
                 val text = docCleaned[0]
                 documentationArms.add(
                     quote(
-                        "&#name::#ident #params => ::core::option::Option::Some(#text)",
+                        "&`#`name::`#`ident `#`params => ::core::option::Option::Some(`#`text)",
                         "name" to name,
                         "ident" to ident,
                         "params" to params,
@@ -116,13 +116,14 @@ internal fun enumMessageInner(ast: DeriveInput): SynResult<TokenStream> {
                     ),
                 )
             } else {
+                val docConcats = docCleaned.map { quote("concat!(`#`doc, \"\\n\")", "doc" to it) }
                 documentationArms.add(
                     quote(
-                        "&#name::#ident #params => ::core::option::Option::Some(concat!(#(concat!(#documentation, \"\\n\")),*))",
+                        "&`#`name::`#`ident `#`params => ::core::option::Option::Some(concat!(`#`(`#`doc_concats),*))",
                         "name" to name,
                         "ident" to ident,
                         "params" to params,
-                        "documentation" to docCleaned,
+                        "doc_concats" to docConcats,
                     ),
                 )
             }
@@ -143,32 +144,32 @@ internal fun enumMessageInner(ast: DeriveInput): SynResult<TokenStream> {
         quote(
             """
             #[automatically_derived]
-            impl #impl_generics #strum_module_path::EnumMessage for #name #ty_generics #where_clause {
+            impl `#`impl_generics `#`strum_module_path::EnumMessage for `#`name `#`ty_generics `#`where_clause {
                 #[inline]
                 fn get_message(&self) -> ::core::option::Option<&'static str> {
                     match self {
-                        #(#arms),*
+                        `#`(`#`arms),*
                     }
                 }
 
                 #[inline]
                 fn get_detailed_message(&self) -> ::core::option::Option<&'static str> {
                     match self {
-                        #(#detailed_arms),*
+                        `#`(`#`detailed_arms),*
                     }
                 }
 
                 #[inline]
                 fn get_documentation(&self) -> ::core::option::Option<&'static str> {
                     match self {
-                        #(#documentation_arms),*
+                        `#`(`#`documentation_arms),*
                     }
                 }
 
                 #[inline]
                 fn get_serializations(&self) -> &'static [&'static str] {
                     match self {
-                        #(#serializations),*
+                        `#`(`#`serializations),*
                     }
                 }
             }

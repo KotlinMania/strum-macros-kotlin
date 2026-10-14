@@ -38,10 +38,10 @@ internal fun enumTryAsInner(ast: DeriveInput): SynResult<TokenStream> {
                         .map { it.ty.toTokenStream() }
                 val fieldNames =
                     (0 until fields.fields.unnamed.len()).map { i ->
-                        val name = "x".repeat(i + 1)
-                        val ident = formatIdent("{}", name)
-                        quote("#ident", "ident" to ident)
+                        formatIdent("{}", "x".repeat(i + 1))
                     }
+                val refTypes = types.map { quote("&`#`t", "t" to it) }
+                val mutTypes = types.map { quote("&mut `#`t", "t" to it) }
 
                 val moveFnName = formatIdent("try_as_{}", snakify(variantName.toString()))
                 val refFnName = formatIdent("try_as_{}_ref", snakify(variantName.toString()))
@@ -53,9 +53,9 @@ internal fun enumTryAsInner(ast: DeriveInput): SynResult<TokenStream> {
                         #[automatically_derived]
                         #[must_use]
                         #[inline]
-                        pub fn #move_fn_name(self) -> ::core::option::Option<(#(#types),*)> {
+                        pub fn `#`move_fn_name(self) -> ::core::option::Option<(`#`(`#`types),*)> {
                             match self {
-                                #enum_name::#variant_name (#(#field_names),*) => Some((#(#field_names),*)),
+                                `#`enum_name::`#`variant_name (`#`(`#`field_names),*) => Some((`#`(`#`field_names),*)),
                                 _ => None
                             }
                         }
@@ -63,9 +63,9 @@ internal fun enumTryAsInner(ast: DeriveInput): SynResult<TokenStream> {
                         #[automatically_derived]
                         #[must_use]
                         #[inline]
-                        pub const fn #ref_fn_name(&self) -> ::core::option::Option<(#(&#types),*)> {
+                        pub const fn `#`ref_fn_name(&self) -> ::core::option::Option<(`#`(`#`ref_types),*)> {
                             match self {
-                                #enum_name::#variant_name (#(#field_names),*) => Some((#(#field_names),*)),
+                                `#`enum_name::`#`variant_name (`#`(`#`field_names),*) => Some((`#`(`#`field_names),*)),
                                 _ => None
                             }
                         }
@@ -73,15 +73,17 @@ internal fun enumTryAsInner(ast: DeriveInput): SynResult<TokenStream> {
                         #[automatically_derived]
                         #[must_use]
                         #[inline]
-                        pub fn #mut_fn_name(&mut self) -> ::core::option::Option<(#(&mut #types),*)> {
+                        pub fn `#`mut_fn_name(&mut self) -> ::core::option::Option<(`#`(`#`mut_types),*)> {
                             match self {
-                                #enum_name::#variant_name (#(#field_names),*) => Some((#(#field_names),*)),
+                                `#`enum_name::`#`variant_name (`#`(`#`field_names),*) => Some((`#`(`#`field_names),*)),
                                 _ => None
                             }
                         }
                         """.trimIndent(),
                         "move_fn_name" to moveFnName,
                         "types" to types,
+                        "ref_types" to refTypes,
+                        "mut_types" to mutTypes,
                         "enum_name" to enumName,
                         "variant_name" to variantName,
                         "field_names" to fieldNames,
@@ -98,8 +100,8 @@ internal fun enumTryAsInner(ast: DeriveInput): SynResult<TokenStream> {
         quote(
             """
             #[automatically_derived]
-            impl #impl_generics #enum_name #ty_generics #where_clause {
-                #(#variant_tokens)*
+            impl `#`impl_generics `#`enum_name `#`ty_generics `#`where_clause {
+                `#`(`#`variant_tokens)*
             }
             """.trimIndent(),
             "impl_generics" to implGenerics,

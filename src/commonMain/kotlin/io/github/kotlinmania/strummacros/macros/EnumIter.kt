@@ -35,7 +35,7 @@ internal fun enumIterInner(ast: DeriveInput): SynResult<TokenStream> {
     val typeParamList = gen.typeParams().map { it.ident }.toList()
     val phantomData =
         if (typeParamList.isNotEmpty()) {
-            quote("< fn() -> ( #(#g),* ) >", "g" to typeParamList)
+            quote("< fn() -> ( `#`(`#`g),* ) >", "g" to typeParamList)
         } else {
             quote("< fn() -> () >")
         }
@@ -60,19 +60,19 @@ internal fun enumIterInner(ast: DeriveInput): SynResult<TokenStream> {
                 is Fields.Unit -> quote("")
                 is Fields.Unnamed -> {
                     val defaults = List(fields.fields.unnamed.len()) { quote("::core::default::Default::default()") }
-                    quote("(#(#defaults),*)", "defaults" to defaults)
+                    quote("(`#`(`#`defaults),*)", "defaults" to defaults)
                 }
                 is Fields.Named -> {
                     val fieldIdents =
                         fields.fields.named
                             .toList()
                             .mapNotNull { it.ident }
-                    val fieldAssignments = fieldIdents.map { f -> quote("#f: ::core::default::Default::default()", "f" to f) }
-                    quote("{#(#field_assignments),*}", "field_assignments" to fieldAssignments)
+                    val fieldAssignments = fieldIdents.map { f -> quote("`#`f: ::core::default::Default::default()", "f" to f) }
+                    quote("{`#`(`#`field_assignments),*}", "field_assignments" to fieldAssignments)
                 }
             }
 
-        arms.add(quote("#idx => ::core::option::Option::Some(#name::#ident #params)", "idx" to idx, "name" to name, "ident" to ident, "params" to params))
+        arms.add(quote("`#`idx => ::core::option::Option::Some(`#`name::`#`ident `#`params)", "idx" to idx, "name" to name, "ident" to ident, "params" to params))
         idx += 1
     }
 
@@ -84,41 +84,41 @@ internal fun enumIterInner(ast: DeriveInput): SynResult<TokenStream> {
     val output =
         quote(
             """
-            #[doc = #doc_comment]
+            #[doc = `#`doc_comment]
             #[allow(
                 missing_copy_implementations,
             )]
-            #vis struct #iter_name #impl_generics {
+            `#`vis struct `#`iter_name `#`impl_generics {
                 idx: usize,
                 back_idx: usize,
-                marker: ::core::marker::PhantomData #phantom_data,
+                marker: ::core::marker::PhantomData `#`phantom_data,
             }
 
             #[automatically_derived]
-            impl #impl_generics ::core::fmt::Debug for #iter_name #ty_generics #where_clause {
+            impl `#`impl_generics ::core::fmt::Debug for `#`iter_name `#`ty_generics `#`where_clause {
                 fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-                    f.debug_struct(#iter_name_debug_struct)
+                    f.debug_struct(`#`iter_name_debug_struct)
                         .field("len", &self.len())
                         .finish()
                 }
             }
 
             #[automatically_derived]
-            impl #impl_generics #iter_name #ty_generics #where_clause {
-                fn get(&self, idx: usize) -> ::core::option::Option<#name #ty_generics> {
+            impl `#`impl_generics `#`iter_name `#`ty_generics `#`where_clause {
+                fn get(&self, idx: usize) -> ::core::option::Option<`#`name `#`ty_generics> {
                     match idx {
-                        #(#arms),*
+                        `#`(`#`arms),*
                     }
                 }
             }
 
             #[automatically_derived]
-            impl #impl_generics #strum_module_path::IntoEnumIterator for #name #ty_generics #where_clause {
-                type Iterator = #iter_name #ty_generics;
+            impl `#`impl_generics `#`strum_module_path::IntoEnumIterator for `#`name `#`ty_generics `#`where_clause {
+                type Iterator = `#`iter_name `#`ty_generics;
 
                 #[inline]
-                fn iter() -> #iter_name #ty_generics {
-                    #iter_name {
+                fn iter() -> `#`iter_name `#`ty_generics {
+                    `#`iter_name {
                         idx: 0,
                         back_idx: 0,
                         marker: ::core::marker::PhantomData,
@@ -127,8 +127,8 @@ internal fun enumIterInner(ast: DeriveInput): SynResult<TokenStream> {
             }
 
             #[automatically_derived]
-            impl #impl_generics ::core::iter::Iterator for #iter_name #ty_generics #where_clause {
-                type Item = #name #ty_generics;
+            impl `#`impl_generics ::core::iter::Iterator for `#`iter_name `#`ty_generics `#`where_clause {
+                type Item = `#`name `#`ty_generics;
 
                 #[inline]
                 fn next(&mut self) -> ::core::option::Option<<Self as Iterator>::Item> {
@@ -137,25 +137,25 @@ internal fun enumIterInner(ast: DeriveInput): SynResult<TokenStream> {
 
                 #[inline]
                 fn size_hint(&self) -> (usize, ::core::option::Option<usize>) {
-                    let t = if self.idx + self.back_idx >= #variant_count { 0 } else { #variant_count - self.idx - self.back_idx };
+                    let t = if self.idx + self.back_idx >= `#`variant_count { 0 } else { `#`variant_count - self.idx - self.back_idx };
                     (t, ::core::option::Option::Some(t))
                 }
 
                 #[inline]
                 fn nth(&mut self, n: usize) -> ::core::option::Option<<Self as Iterator>::Item> {
                     let idx = self.idx + n + 1;
-                    if idx + self.back_idx > #variant_count {
-                        self.idx = #variant_count;
+                    if idx + self.back_idx > `#`variant_count {
+                        self.idx = `#`variant_count;
                         ::core::option::Option::None
                     } else {
                         self.idx = idx;
-                        #iter_name::get(self, idx - 1)
+                        `#`iter_name::get(self, idx - 1)
                     }
                 }
             }
 
             #[automatically_derived]
-            impl #impl_generics ::core::iter::ExactSizeIterator for #iter_name #ty_generics #where_clause {
+            impl `#`impl_generics ::core::iter::ExactSizeIterator for `#`iter_name `#`ty_generics `#`where_clause {
                 #[inline]
                 fn len(&self) -> usize {
                     self.size_hint().0
@@ -163,29 +163,29 @@ internal fun enumIterInner(ast: DeriveInput): SynResult<TokenStream> {
             }
 
             #[automatically_derived]
-            impl #impl_generics ::core::iter::DoubleEndedIterator for #iter_name #ty_generics #where_clause {
+            impl `#`impl_generics ::core::iter::DoubleEndedIterator for `#`iter_name `#`ty_generics `#`where_clause {
                 #[inline]
                 fn next_back(&mut self) -> ::core::option::Option<<Self as Iterator>::Item> {
                     let back_idx = self.back_idx + 1;
 
-                    if self.idx + back_idx > #variant_count {
-                        self.back_idx = #variant_count;
+                    if self.idx + back_idx > `#`variant_count {
+                        self.back_idx = `#`variant_count;
                         ::core::option::Option::None
                     } else {
                         self.back_idx = back_idx;
-                        #iter_name::get(self, #variant_count - self.back_idx)
+                        `#`iter_name::get(self, `#`variant_count - self.back_idx)
                     }
                 }
             }
 
             #[automatically_derived]
-            impl #impl_generics ::core::iter::FusedIterator for #iter_name #ty_generics #where_clause { }
+            impl `#`impl_generics ::core::iter::FusedIterator for `#`iter_name `#`ty_generics `#`where_clause { }
 
             #[automatically_derived]
-            impl #impl_generics ::core::clone::Clone for #iter_name #ty_generics #where_clause {
+            impl `#`impl_generics ::core::clone::Clone for `#`iter_name `#`ty_generics `#`where_clause {
                 #[inline]
-                fn clone(&self) -> #iter_name #ty_generics {
-                    #iter_name {
+                fn clone(&self) -> `#`iter_name `#`ty_generics {
+                    `#`iter_name {
                         idx: self.idx,
                         back_idx: self.back_idx,
                         marker: self.marker.clone(),

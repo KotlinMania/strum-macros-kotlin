@@ -34,8 +34,8 @@ internal fun enumCountInner(ast: DeriveInput): SynResult<TokenStream> {
         quote(
             """
             #[automatically_derived]
-            impl #impl_generics #strum_module_path::EnumCount for #name #ty_generics #where_clause {
-                const COUNT: usize = #n;
+            impl `#`impl_generics `#`strum_module_path::EnumCount for `#`name `#`ty_generics `#`where_clause {
+                const COUNT: usize = `#`n;
             }
             """.trimIndent(),
             "impl_generics" to implGenerics,

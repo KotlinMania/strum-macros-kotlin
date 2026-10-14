@@ -58,7 +58,7 @@ private fun getArms(ast: DeriveInput, transparentFn: (TokenStream) -> TokenStrea
                 is Fields.Named -> quote("{..}")
             }
 
-        arms.add(quote("#name::#ident #params => #output", "name" to name, "ident" to ident, "params" to params, "output" to output))
+        arms.add(quote("`#`name::`#`ident `#`params => `#`output", "name" to name, "ident" to ident, "params" to params, "output" to output))
     }
 
     if (arms.size < variants.size) {
@@ -82,18 +82,18 @@ internal fun asRefStrInner(ast: DeriveInput): SynResult<TokenStream> {
     val (implGenerics, tyGenerics, whereClause) = ast.generics.splitForImpl()
     val arms =
         getArms(ast) { tok ->
-            quote("::core::convert::AsRef::<str>::as_ref(#tok)", "tok" to tok)
+            quote("::core::convert::AsRef::<str>::as_ref(`#`tok)", "tok" to tok)
         }.getOrElse { return SynResult.failure(it) }
 
     val output =
         quote(
             """
             #[automatically_derived]
-            impl #impl_generics ::core::convert::AsRef<str> for #name #ty_generics #where_clause {
+            impl `#`impl_generics ::core::convert::AsRef<str> for `#`name `#`ty_generics `#`where_clause {
                 #[inline]
                 fn as_ref(&self) -> &str {
                     match *self {
-                        #(#arms),*
+                        `#`(`#`arms),*
                     }
                 }
             }
@@ -120,7 +120,7 @@ public fun asStaticStrInner(
     val (implGenerics, tyGenerics, whereClause) = ast.generics.splitForImpl()
     val arms =
         getArms(ast) { tok ->
-            quote("::core::convert::From::from(#tok)", "tok" to tok)
+            quote("::core::convert::From::from(`#`tok)", "tok" to tok)
         }.getOrElse { return SynResult.failure(it) }
 
     val typeProperties = ast.getTypeProperties().getOrElse { return SynResult.failure(it) }
@@ -144,11 +144,11 @@ public fun asStaticStrInner(
                 quote(
                     """
                     #[automatically_derived]
-                    impl #impl_generics #strum_module_path::AsStaticRef<str> for #name #ty_generics #where_clause {
+                    impl `#`impl_generics `#`strum_module_path::AsStaticRef<str> for `#`name `#`ty_generics `#`where_clause {
                         #[inline]
                         fn as_static(&self) -> &'static str {
                             match *self {
-                                #(#arms),*
+                                `#`(`#`arms),*
                             }
                         }
                     }
@@ -165,20 +165,20 @@ public fun asStaticStrInner(
                     quote(
                         """
                         #[automatically_derived]
-                        impl #impl_generics ::core::convert::From<#name #ty_generics> for &'static str #where_clause {
+                        impl `#`impl_generics ::core::convert::From<`#`name `#`ty_generics> for &'static str `#`where_clause {
                             #[inline]
-                            fn from(x: #name #ty_generics) -> &'static str {
+                            fn from(x: `#`name `#`ty_generics) -> &'static str {
                                 match x {
-                                    #(#arms),*
+                                    `#`(`#`arms),*
                                 }
                             }
                         }
                         #[automatically_derived]
-                        impl #impl_generics2 ::core::convert::From<&'_derivative_strum #name #ty_generics> for &'static str #where_clause {
+                        impl `#`impl_generics2 ::core::convert::From<&'_derivative_strum `#`name `#`ty_generics> for &'static str `#`where_clause {
                             #[inline]
-                            fn from(x: &'_derivative_strum #name #ty_generics) -> &'static str {
+                            fn from(x: &'_derivative_strum `#`name `#`ty_generics) -> &'static str {
                                 match *x {
-                                    #(#arms),*
+                                    `#`(`#`arms),*
                                 }
                             }
                         }
@@ -194,24 +194,24 @@ public fun asStaticStrInner(
                     quote(
                         """
                         #[automatically_derived]
-                        impl #impl_generics #name #ty_generics #where_clause {
+                        impl `#`impl_generics `#`name `#`ty_generics `#`where_clause {
                             pub const fn into_str(&self) -> &'static str {
                                 match self {
-                                    #(#arms),*
+                                    `#`(`#`arms),*
                                 }
                             }
                         }
                         #[automatically_derived]
-                        impl #impl_generics ::core::convert::From<#name #ty_generics> for &'static str #where_clause {
-                            fn from(x: #name #ty_generics) -> &'static str {
+                        impl `#`impl_generics ::core::convert::From<`#`name `#`ty_generics> for &'static str `#`where_clause {
+                            fn from(x: `#`name `#`ty_generics) -> &'static str {
                                 match x {
-                                    #(#arms),*
+                                    `#`(`#`arms),*
                                 }
                             }
                         }
                         #[automatically_derived]
-                        impl #impl_generics2 ::core::convert::From<&'_derivative_strum #name #ty_generics> for &'static str #where_clause {
-                            fn from(x: &'_derivative_strum #name #ty_generics) -> &'static str {
+                        impl `#`impl_generics2 ::core::convert::From<&'_derivative_strum `#`name `#`ty_generics> for &'static str `#`where_clause {
+                            fn from(x: &'_derivative_strum `#`name `#`ty_generics) -> &'static str {
                                 x.into_str()
                             }
                         }

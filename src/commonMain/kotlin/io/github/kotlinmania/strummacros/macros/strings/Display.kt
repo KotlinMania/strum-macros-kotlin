@@ -41,7 +41,7 @@ internal fun displayInner(ast: DeriveInput): SynResult<TokenStream> {
         if (variantProperties.transparent != null) {
             val armResult =
                 extractSingleFieldVariantAndThen(name, variant) { tok ->
-                    quote("::core::fmt::Display::fmt(#tok, f)", "tok" to tok)
+                    quote("::core::fmt::Display::fmt(`#`tok, f)", "tok" to tok)
                 }
             if (armResult.isFailure) {
                 return SynResult.failure(nonSingleFieldVariantError("transparent"))
@@ -64,24 +64,24 @@ internal fun displayInner(ast: DeriveInput): SynResult<TokenStream> {
                     val names =
                         (0 until fields.fields.unnamed.len()).map { i ->
                             val fieldIdent = formatIdent("field{}", i)
-                            quote("ref #fieldIdent", "fieldIdent" to fieldIdent)
+                            quote("ref `#`fieldIdent", "fieldIdent" to fieldIdent)
                         }
-                    quote("(#(#names),*)", "names" to names)
+                    quote("(`#`(`#`names),*)", "names" to names)
                 }
                 is Fields.Named -> {
                     val names =
                         fields.fields.named.toList().map { field ->
                             val fieldIdent = field.ident!!
-                            quote("ref #fieldIdent", "fieldIdent" to fieldIdent)
+                            quote("ref `#`fieldIdent", "fieldIdent" to fieldIdent)
                         }
-                    quote("{#(#names),*}", "names" to names)
+                    quote("{`#`(`#`names),*}", "names" to names)
                 }
             }
 
         if (variantProperties.toStringValue == null && variantProperties.default != null) {
             val armResult =
                 extractSingleFieldVariantAndThen(name, variant) { tok ->
-                    quote("::core::fmt::Display::fmt(#tok, f)", "tok" to tok)
+                    quote("::core::fmt::Display::fmt(`#`tok, f)", "tok" to tok)
                 }
             if (armResult.isFailure) {
                 return SynResult.failure(
@@ -100,7 +100,7 @@ internal fun displayInner(ast: DeriveInput): SynResult<TokenStream> {
                 is Fields.Named -> {
                     val usedVars = captureFormatStringIdents(output).getOrElse { return SynResult.failure(it) }
                     if (usedVars.isEmpty()) {
-                        quote("#name::#ident #params => ::core::fmt::Display::fmt(#output, f)", "name" to name, "ident" to ident, "params" to params, "output" to output)
+                        quote("`#`name::`#`ident `#`params => ::core::fmt::Display::fmt(`#`output, f)", "name" to name, "ident" to ident, "params" to params, "output" to output)
                     } else {
                         val usedSet = usedVars.map { it.toString() }.toSet()
                         val args =
@@ -109,13 +109,13 @@ internal fun displayInner(ast: DeriveInput): SynResult<TokenStream> {
                                 if (fieldIdent.toString() !in usedSet) {
                                     null
                                 } else {
-                                    quote("#fieldIdent = #fieldIdent", "fieldIdent" to fieldIdent)
+                                    quote("`#`fieldIdent = `#`fieldIdent", "fieldIdent" to fieldIdent)
                                 }
                             }
                         quote(
                             """
                             #[allow(unused_variables)]
-                            #name::#ident #params => ::core::fmt::Display::fmt(&format_args!(#output, #(#args),*), f)
+                            `#`name::`#`ident `#`params => ::core::fmt::Display::fmt(&format_args!(`#`output, `#`(`#`args),*), f)
                             """.trimIndent(),
                             "name" to name,
                             "ident" to ident,
@@ -136,7 +136,7 @@ internal fun displayInner(ast: DeriveInput): SynResult<TokenStream> {
                         )
                     }
                     if (usedVars.isEmpty()) {
-                        quote("#name::#ident #params => ::core::fmt::Display::fmt(#output, f)", "name" to name, "ident" to ident, "params" to params, "output" to output)
+                        quote("`#`name::`#`ident `#`params => ::core::fmt::Display::fmt(`#`output, f)", "name" to name, "ident" to ident, "params" to params, "output" to output)
                     } else {
                         val args =
                             (0 until fields.fields.unnamed.len()).map { i ->
@@ -145,7 +145,7 @@ internal fun displayInner(ast: DeriveInput): SynResult<TokenStream> {
                         quote(
                             """
                             #[allow(unused_variables)]
-                            #name::#ident #params => ::core::fmt::Display::fmt(&format!(#output, #(#args),*), f)
+                            `#`name::`#`ident `#`params => ::core::fmt::Display::fmt(&format!(`#`output, `#`(`#`args),*), f)
                             """.trimIndent(),
                             "name" to name,
                             "ident" to ident,
@@ -165,7 +165,7 @@ internal fun displayInner(ast: DeriveInput): SynResult<TokenStream> {
                             ),
                         )
                     }
-                    quote("#name::#ident #params => ::core::fmt::Display::fmt(#output, f)", "name" to name, "ident" to ident, "params" to params, "output" to output)
+                    quote("`#`name::`#`ident `#`params => ::core::fmt::Display::fmt(`#`output, f)", "name" to name, "ident" to ident, "params" to params, "output" to output)
                 }
             }
 
@@ -180,10 +180,10 @@ internal fun displayInner(ast: DeriveInput): SynResult<TokenStream> {
         quote(
             """
             #[automatically_derived]
-            impl #impl_generics ::core::fmt::Display for #name #ty_generics #where_clause {
+            impl `#`impl_generics ::core::fmt::Display for `#`name `#`ty_generics `#`where_clause {
                 fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::result::Result<(), ::core::fmt::Error> {
                     match *self {
-                        #(#arms),*
+                        `#`(`#`arms),*
                     }
                 }
             }

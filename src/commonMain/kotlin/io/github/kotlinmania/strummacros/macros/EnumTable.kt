@@ -55,7 +55,7 @@ internal fun enumTableInner(ast: DeriveInput): SynResult<TokenStream> {
             val disabledIdent = variant.ident
             val panicMessage = "Can't use `$disabledIdent` with `$tableName` - variant is disabled for Strum features"
             disabledVariants.add(disabledIdent)
-            disabledMatches.add(quote("#name::#disabled_ident => panic!(#panic_message),", "name" to name, "disabled_ident" to disabledIdent, "panic_message" to panicMessage))
+            disabledMatches.add(quote("`#`name::`#`disabled_ident => panic!(`#`panic_message),", "name" to name, "disabled_ident" to disabledIdent, "panic_message" to panicMessage))
             continue
         }
 
@@ -71,11 +71,11 @@ internal fun enumTableInner(ast: DeriveInput): SynResult<TokenStream> {
         val pascalCase = variant.ident
         val snakeCase = formatIdent("_{}", snakify(pascalCase.toString()))
 
-        getMatches.add(quote("#name::#pascal_case => &self.#snake_case,", "name" to name, "pascal_case" to pascalCase, "snake_case" to snakeCase))
-        getMatchesMut.add(quote("#name::#pascal_case => &mut self.#snake_case,", "name" to name, "pascal_case" to pascalCase, "snake_case" to snakeCase))
-        setMatches.add(quote("#name::#pascal_case => self.#snake_case = new_value,", "name" to name, "pascal_case" to pascalCase, "snake_case" to snakeCase))
-        closureFields.add(quote("#snake_case: func(#name::#pascal_case),", "snake_case" to snakeCase, "name" to name, "pascal_case" to pascalCase))
-        transformFields.add(quote("#snake_case: func(#name::#pascal_case, &self.#snake_case),", "snake_case" to snakeCase, "name" to name, "pascal_case" to pascalCase))
+        getMatches.add(quote("`#`name::`#`pascal_case => &self.`#`snake_case,", "name" to name, "pascal_case" to pascalCase, "snake_case" to snakeCase))
+        getMatchesMut.add(quote("`#`name::`#`pascal_case => &mut self.`#`snake_case,", "name" to name, "pascal_case" to pascalCase, "snake_case" to snakeCase))
+        setMatches.add(quote("`#`name::`#`pascal_case => self.`#`snake_case = new_value,", "name" to name, "pascal_case" to pascalCase, "snake_case" to snakeCase))
+        closureFields.add(quote("`#`snake_case: func(`#`name::`#`pascal_case),", "snake_case" to snakeCase, "name" to name, "pascal_case" to pascalCase))
+        transformFields.add(quote("`#`snake_case: func(`#`name::`#`pascal_case, &self.`#`snake_case),", "snake_case" to snakeCase, "name" to name, "pascal_case" to pascalCase))
         pascalIdents.add(pascalCase)
         snakeIdents.add(snakeCase)
     }
@@ -106,89 +106,89 @@ internal fun enumTableInner(ast: DeriveInput): SynResult<TokenStream> {
     val output =
         quote(
             """
-            #[doc = #doc_comment]
+            #[doc = `#`doc_comment]
             #[allow(
                 missing_copy_implementations,
             )]
             #[derive(Debug, Clone, Default, PartialEq, Eq, Hash)]
-            #vis struct #table_name<T> {
-                #(#snake_idents: T,)*
+            `#`vis struct `#`table_name<T> {
+                `#`(`#`snake_idents: T,)*
             }
 
             #[automatically_derived]
-            impl<T: Clone> #table_name<T> {
-                #[doc = #doc_filled]
-                #vis fn filled(value: T) -> #table_name<T> {
-                    #table_name {
-                        #(#snake_idents: value.clone(),)*
+            impl<T: Clone> `#`table_name<T> {
+                #[doc = `#`doc_filled]
+                `#`vis fn filled(value: T) -> `#`table_name<T> {
+                    `#`table_name {
+                        `#`(`#`snake_idents: value.clone(),)*
                     }
                 }
             }
 
             #[automatically_derived]
-            impl<T> #table_name<T> {
-                #[doc = #doc_new]
+            impl<T> `#`table_name<T> {
+                #[doc = `#`doc_new]
                 #[inline]
-                #vis fn new(
-                    #(#snake_idents: T,)*
-                ) -> #table_name<T> {
-                    #table_name {
-                        #(#snake_idents,)*
+                `#`vis fn new(
+                    `#`(`#`snake_idents: T,)*
+                ) -> `#`table_name<T> {
+                    `#`table_name {
+                        `#`(`#`snake_idents,)*
                     }
                 }
 
-                #[doc = #doc_closure]
+                #[doc = `#`doc_closure]
                 #[inline]
-                #vis fn from_closure<F: FnMut(#name)->T>(mut func: F) -> #table_name<T> {
-                  #table_name {
-                    #(#closure_fields)*
+                `#`vis fn from_closure<F: FnMut(`#`name)->T>(mut func: F) -> `#`table_name<T> {
+                  `#`table_name {
+                    `#`(`#`closure_fields)*
                   }
                 }
 
-                #[doc = #doc_transform]
+                #[doc = `#`doc_transform]
                 #[inline]
-                #vis fn transform<U, F: FnMut(#name, &T)->U>(&self, mut func: F) -> #table_name<U> {
-                  #table_name {
-                    #(#transform_fields)*
+                `#`vis fn transform<U, F: FnMut(`#`name, &T)->U>(&self, mut func: F) -> `#`table_name<U> {
+                  `#`table_name {
+                    `#`(`#`transform_fields)*
                   }
                 }
 
             }
 
             #[automatically_derived]
-            impl<T> ::core::ops::Index<#name> for #table_name<T> {
+            impl<T> ::core::ops::Index<`#`name> for `#`table_name<T> {
                 type Output = T;
 
                 #[inline]
-                fn index(&self, idx: #name) -> &T {
+                fn index(&self, idx: `#`name) -> &T {
                     match idx {
-                        #(#get_matches)*
-                        #(#disabled_matches)*
+                        `#`(`#`get_matches)*
+                        `#`(`#`disabled_matches)*
                     }
                 }
             }
 
             #[automatically_derived]
-            impl<T> ::core::ops::IndexMut<#name> for #table_name<T> {
+            impl<T> ::core::ops::IndexMut<`#`name> for `#`table_name<T> {
                 #[inline]
-                fn index_mut(&mut self, idx: #name) -> &mut T {
+                fn index_mut(&mut self, idx: `#`name) -> &mut T {
                     match idx {
-                        #(#get_matches_mut)*
-                        #(#disabled_matches)*
+                        `#`(`#`get_matches_mut)*
+                        `#`(`#`disabled_matches)*
                     }
                 }
             }
 
             #[automatically_derived]
-            impl<T> #table_name<::core::option::Option<T>> {
-                #[doc = #doc_option_all]
+            impl<T> `#`table_name<::core::option::Option<T>> {
+                #[doc = `#`doc_option_all]
                 #[inline]
-                #vis fn all(self) -> ::core::option::Option<#table_name<T>> {
-                    if let #table_name {
-                        #(#snake_idents: ::core::option::Option::Some(#snake_idents),)*
+                `#`vis fn all(self) -> ::core::option::Option<`#`table_name<T>> {
+                    if let `#`table_name {
+                        `#`(`#`snake_idents: ::core::option::Option::Some(`#`snake_idents),)*
                     } = self {
-                        ::core::option::Option::Some(#table_name {
-                            #(#snake_idents,)*
+                        ::core::option::Option::Some(`#`table_name {
+                            `#`(`#`snake_idents,)*
                         })
                     } else {
                         ::core::option::Option::None
@@ -197,12 +197,12 @@ internal fun enumTableInner(ast: DeriveInput): SynResult<TokenStream> {
             }
 
             #[automatically_derived]
-            impl<T, E> #table_name<::core::result::Result<T, E>> {
-                #[doc = #doc_result_all_ok]
+            impl<T, E> `#`table_name<::core::result::Result<T, E>> {
+                #[doc = `#`doc_result_all_ok]
                 #[inline]
-                #vis fn all_ok(self) -> ::core::result::Result<#table_name<T>, E> {
-                    ::core::result::Result::Ok(#table_name {
-                        #(#snake_idents: self.#snake_idents?,)*
+                `#`vis fn all_ok(self) -> ::core::result::Result<`#`table_name<T>, E> {
+                    ::core::result::Result::Ok(`#`table_name {
+                        `#`(`#`snake_idents: self.`#`snake_idents?,)*
                     })
                 }
             }
