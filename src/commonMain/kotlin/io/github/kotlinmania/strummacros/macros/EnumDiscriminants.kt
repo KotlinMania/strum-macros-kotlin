@@ -1,6 +1,7 @@
 // port-lint: source macros/enum_discriminants.rs
 package io.github.kotlinmania.strummacros.macros
 
+import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.procmacro2.TokenTree
@@ -13,7 +14,6 @@ import io.github.kotlinmania.syn.Data
 import io.github.kotlinmania.syn.DeriveInput
 import io.github.kotlinmania.syn.Fields
 import io.github.kotlinmania.syn.GenericParam
-import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.syn.Lifetime
 import io.github.kotlinmania.syn.PathParse
 import io.github.kotlinmania.syn.SynResult

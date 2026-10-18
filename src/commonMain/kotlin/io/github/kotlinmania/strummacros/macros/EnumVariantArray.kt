@@ -1,6 +1,7 @@
 // port-lint: source macros/enum_variant_array.rs
 package io.github.kotlinmania.strummacros.macros
 
+import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.quote
 import io.github.kotlinmania.strummacros.helpers.getTypeProperties
@@ -9,7 +10,6 @@ import io.github.kotlinmania.strummacros.helpers.nonUnitVariantError
 import io.github.kotlinmania.syn.Data
 import io.github.kotlinmania.syn.DeriveInput
 import io.github.kotlinmania.syn.Fields
-import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.syn.SynResult
 
 internal fun staticVariantsArrayInner(ast: DeriveInput): SynResult<TokenStream> {
