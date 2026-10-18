@@ -1,6 +1,7 @@
 // port-lint: source macros/enum_table.rs
 package io.github.kotlinmania.strummacros.macros
 
+import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.procmacro2.Span
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.formatIdent
@@ -11,7 +12,6 @@ import io.github.kotlinmania.strummacros.helpers.snakify
 import io.github.kotlinmania.syn.Data
 import io.github.kotlinmania.syn.DeriveInput
 import io.github.kotlinmania.syn.Fields
-import io.github.kotlinmania.syn.Ident
 import io.github.kotlinmania.syn.SynError
 import io.github.kotlinmania.syn.SynResult
 
