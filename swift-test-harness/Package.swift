@@ -15,19 +15,11 @@ let package = Package(
             dependencies: [
                 .product(name: "StrumMacrosLibrary", package: "StrumMacros")
             ],
-            swiftSettings: [
-                .unsafeFlags([
-                    "-F", "/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
-                ]),
-            ],
             linkerSettings: [
                 .unsafeFlags([
                     "-L", "../build/swift-test",
                     "-L", "../build/MergedLibraries/macos/Debug",
                     "-lStrumMacros",
-                    "-F", "/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
-                    "-Xlinker", "-rpath", "-Xlinker", "/Library/Developer/CommandLineTools/Library/Developer/Frameworks",
-                    "-Xlinker", "-rpath", "-Xlinker", "/Library/Developer/CommandLineTools/Library/Developer/usr/lib",
                 ]),
             ]
         ),
