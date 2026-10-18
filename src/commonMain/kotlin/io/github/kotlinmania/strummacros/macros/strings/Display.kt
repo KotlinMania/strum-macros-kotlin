@@ -11,7 +11,7 @@ import io.github.kotlinmania.strummacros.helpers.nonSingleFieldVariantError
 import io.github.kotlinmania.syn.Data
 import io.github.kotlinmania.syn.DeriveInput
 import io.github.kotlinmania.syn.Fields
-import io.github.kotlinmania.syn.Ident
+import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.syn.IdentParse
 import io.github.kotlinmania.syn.LitStr
 import io.github.kotlinmania.syn.SynError

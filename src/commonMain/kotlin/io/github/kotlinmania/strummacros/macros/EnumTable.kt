@@ -11,7 +11,7 @@ import io.github.kotlinmania.strummacros.helpers.snakify
 import io.github.kotlinmania.syn.Data
 import io.github.kotlinmania.syn.DeriveInput
 import io.github.kotlinmania.syn.Fields
-import io.github.kotlinmania.syn.Ident
+import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.syn.SynError
 import io.github.kotlinmania.syn.SynResult
 

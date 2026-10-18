@@ -4,7 +4,7 @@ package io.github.kotlinmania.strummacros.macros.strings
 import io.github.kotlinmania.procmacro2.TokenStream
 import io.github.kotlinmania.quote.quote
 import io.github.kotlinmania.syn.Fields
-import io.github.kotlinmania.syn.Ident
+import io.github.kotlinmania.procmacro2.Ident
 import io.github.kotlinmania.syn.SynType
 import io.github.kotlinmania.syn.Variant
 
