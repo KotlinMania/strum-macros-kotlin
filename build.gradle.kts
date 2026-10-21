@@ -119,9 +119,6 @@ configurations.configureEach {
             ),
         )
     }
-    if (name.contains("androidDeviceTest", ignoreCase = true)) {
-        exclude(group = "org.jetbrains", module = "annotations")
-    }
 }
 
 // Opt-ins shared across Kotlin targets.
@@ -492,6 +489,7 @@ kotlin {
 
     sourceSets {
         commonMain.dependencies {
+            api(libs.proc.macro2.kotlin)
             implementation(commonMainDependencyBundle)
         }
         commonTest.dependencies {
