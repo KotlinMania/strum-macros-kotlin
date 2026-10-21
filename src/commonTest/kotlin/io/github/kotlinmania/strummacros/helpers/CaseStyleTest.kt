@@ -51,4 +51,13 @@ class CaseStyleTest {
         assertEquals("hello_2_world", snakify("Hello2World"))
         assertEquals("hello_2_world_3", snakify("Hello2World3"))
     }
+
+    @Test
+    fun testSnakifyLeavesNonAsciiDigitsWithinWords() {
+        assertEquals("hello١world", snakify("hello١world"))
+        assertEquals("hello१world", snakify("hello१world"))
+        assertEquals("hello１world", snakify("hello１world"))
+        assertEquals("hello١_2world", snakify("hello١2world"))
+        assertEquals("hello_2١world", snakify("hello2١world"))
+    }
 }

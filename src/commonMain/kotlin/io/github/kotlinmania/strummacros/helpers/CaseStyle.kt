@@ -173,7 +173,7 @@ internal fun snakify(s: String): String {
     val numStarts = mutableListOf<Int>()
     for (pos in output.indices) {
         val c = output[pos]
-        if (c.isDigit() && pos != 0 && !output[pos - 1].isDigit()) {
+        if (c in '0'..'9' && pos != 0 && output[pos - 1] !in '0'..'9') {
             numStarts.add(pos)
         }
     }
