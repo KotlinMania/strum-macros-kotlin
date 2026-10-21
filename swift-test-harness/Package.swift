@@ -15,6 +15,7 @@ let package = Package(
             dependencies: [
                 .product(name: "StrumMacrosLibrary", package: "StrumMacros")
             ],
+            swiftSettings: [.swiftLanguageMode(.v6)],
             linkerSettings: [
                 .unsafeFlags([
                     "-L", "../build/swift-test",
