@@ -60,4 +60,22 @@ class CaseStyleTest {
         assertEquals("hello١_2world", snakify("hello١2world"))
         assertEquals("hello_2١world", snakify("hello2١world"))
     }
+
+    @Test
+    fun testSnakeCasePreservesCasedModeAcrossDigits() {
+        val expected =
+            mapOf(
+                "AB1C" to "ab1c",
+                "1ABC" to "1abc",
+                "XMLHttpRequest" to "xml_http_request",
+                "AB1Cd" to "ab1_cd",
+                "abc123DEF" to "abc123_def",
+                "Version42Beta" to "version42_beta",
+                "hello__world" to "hello_world",
+                "__hello_world__" to "hello_world",
+            )
+        for ((input, output) in expected) {
+            assertEquals(output, convertCase(input, CaseStyle.SnakeCase), input)
+        }
+    }
 }
