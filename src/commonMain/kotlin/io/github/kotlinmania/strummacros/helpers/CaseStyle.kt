@@ -82,6 +82,7 @@ private fun splitWords(s: String): List<String> {
     val words = mutableListOf<String>()
     val current = StringBuilder()
     var i = 0
+    var lastCasedUpper: Boolean? = null
     while (i < s.length) {
         val c = s[i]
         if (c == '_' || c == '-' || c == ' ' || !c.isLetterOrDigit()) {
@@ -89,18 +90,23 @@ private fun splitWords(s: String): List<String> {
                 words.add(current.toString())
                 current.clear()
             }
+            lastCasedUpper = null
             i++
             continue
         }
         if (c.isUpperCase() && current.isNotEmpty()) {
-            val prev = current.last()
             val next = if (i + 1 < s.length) s[i + 1] else null
-            if (!prev.isUpperCase() || (next != null && next.isLowerCase())) {
+            if (lastCasedUpper == false || (lastCasedUpper == true && next != null && next.isLowerCase())) {
                 words.add(current.toString())
                 current.clear()
             }
         }
         current.append(c)
+        if (c.isLowerCase()) {
+            lastCasedUpper = false
+        } else if (c.isUpperCase()) {
+            lastCasedUpper = true
+        }
         i++
     }
     if (current.isNotEmpty()) {
@@ -173,7 +179,7 @@ internal fun snakify(s: String): String {
     val numStarts = mutableListOf<Int>()
     for (pos in output.indices) {
         val c = output[pos]
-        if (c.isDigit() && pos != 0 && !output[pos - 1].isDigit()) {
+        if (c in '0'..'9' && pos != 0 && output[pos - 1] !in '0'..'9') {
             numStarts.add(pos)
         }
     }
